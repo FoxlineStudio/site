@@ -2,15 +2,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
     getAuth, 
-    signInWithPopup, 
-    GoogleAuthProvider,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
     updateProfile,
-    updateEmail,
-    sendEmailVerification
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
     getFirestore,
@@ -32,19 +29,20 @@ import {
 // 🔥 ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ FIREBASE CONSOLE
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
-  authDomain: "foxline-site.firebaseapp.com",
-  projectId: "foxline-site",
-  storageBucket: "foxline-site.firebasestorage.app",
-  messagingSenderId: "233149428799",
-  appId: "1:233149428799:web:1712345a9fb0da0669348a",
-  measurementId: "G-YTC21D3KMN"
+    apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
+    authDomain: "foxline-studio.firebaseapp.com",
+    projectId: "foxline-studio",
+    storageBucket: "foxline-studio.firebasestorage.app",
+    messagingSenderId: "91239326767",
+    appId: "1:91239326767:web:7488b92e5cf0a3d188fa82"
 };
 
 // Инициализация
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+console.log('🔥 Firebase инициализирован');
 
 // ============================================================
 // ========== АВТОРИЗАЦИЯ ==========
@@ -53,18 +51,29 @@ const db = getFirestore(app);
 // Регистрация
 async function registerUser(email, password, displayName) {
     try {
+        console.log('📝 Начинаем регистрацию:', email);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log('✅ Пользователь создан в Auth:', user.uid);
+        
         // Обновляем профиль с именем
-        await updateProfile(userCredential.user, { displayName: displayName });
+        await updateProfile(user, { displayName: displayName });
+        console.log('✅ Имя обновлено в Auth');
+        
         // Сохраняем данные пользователя в Firestore
-        await setDoc(doc(db, "users", userCredential.user.uid), {
+        const userData = {
             displayName: displayName,
             email: email,
             photoURL: '',
             createdAt: serverTimestamp()
-        });
-        return { success: true, user: userCredential.user };
+        };
+        
+        await setDoc(doc(db, "users", user.uid), userData);
+        console.log('✅ Данные сохранены в Firestore:', userData);
+        
+        return { success: true, user: user };
     } catch (error) {
+        console.error('❌ Ошибка регистрации:', error);
         return { success: false, error: error.message };
     }
 }
@@ -72,9 +81,12 @@ async function registerUser(email, password, displayName) {
 // Вход
 async function loginUser(email, password) {
     try {
+        console.log('🔑 Вход:', email);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('✅ Вход выполнен:', userCredential.user.uid);
         return { success: true, user: userCredential.user };
     } catch (error) {
+        console.error('❌ Ошибка входа:', error);
         return { success: false, error: error.message };
     }
 }
@@ -83,20 +95,37 @@ async function loginUser(email, password) {
 async function logoutUser() {
     try {
         await signOut(auth);
+        console.log('✅ Выход выполнен');
         return { success: true };
     } catch (error) {
+        console.error('❌ Ошибка выхода:', error);
         return { success: false, error: error.message };
     }
 }
 
 // Получить текущего пользователя
 function getCurrentUser() {
-    return auth.currentUser;
+    const user = auth.currentUser;
+    console.log('👤 Текущий пользователь:', user ? user.uid : 'не авторизован');
+    return user;
 }
 
 // Следить за состоянием авторизации
 function onAuthStateChangedListener(callback) {
-    return onAuthStateChanged(auth, callback);
+    return onAuthStateChanged(auth, (user) => {
+        console.log('🔄 Состояние авторизации изменилось:', user ? user.uid : 'не авторизован');
+        callback(user);
+    });
+}
+
+// Восстановление пароля
+async function resetPassword(email) {
+    try {
+        await sendPasswordResetEmail(auth, email);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
 }
 
 // ============================================================
@@ -106,26 +135,32 @@ function onAuthStateChangedListener(callback) {
 // Получить данные пользователя из Firestore
 async function getUserData(uid) {
     try {
+        console.log('📖 Загрузка данных пользователя:', uid);
         const docRef = doc(db, "users", uid);
         const docSnap = await getDoc(docRef);
+        
         if (docSnap.exists()) {
+            console.log('✅ Данные найдены:', docSnap.data());
             return { success: true, data: docSnap.data() };
         } else {
+            console.log('⚠️ Документ не найден, создаём новый');
             // Если документа нет, создаём с базовыми данными
             const user = getCurrentUser();
             if (user) {
                 const newData = {
                     displayName: user.displayName || user.email || 'Пользователь',
                     email: user.email,
-                    photoURL: '',
+                    photoURL: user.photoURL || '',
                     createdAt: serverTimestamp()
                 };
                 await setDoc(docRef, newData);
+                console.log('✅ Создан новый документ:', newData);
                 return { success: true, data: newData };
             }
             return { success: false, error: "Данные не найдены" };
         }
     } catch (error) {
+        console.error('❌ Ошибка загрузки данных:', error);
         return { success: false, error: error.message };
     }
 }
@@ -133,21 +168,29 @@ async function getUserData(uid) {
 // Обновить профиль пользователя
 async function updateUserProfile(uid, data) {
     try {
+        console.log('✏️ Обновление профиля:', uid, data);
         const docRef = doc(db, "users", uid);
         await updateDoc(docRef, {
             ...data,
             updatedAt: serverTimestamp()
         });
+        console.log('✅ Профиль обновлён в Firestore');
+        
         // Также обновляем displayName в Auth
         const user = getCurrentUser();
-        if (user && data.displayName) {
-            await updateProfile(user, { displayName: data.displayName });
-        }
-        if (user && data.photoURL) {
-            await updateProfile(user, { photoURL: data.photoURL });
+        if (user) {
+            if (data.displayName) {
+                await updateProfile(user, { displayName: data.displayName });
+                console.log('✅ Имя обновлено в Auth');
+            }
+            if (data.photoURL !== undefined) {
+                await updateProfile(user, { photoURL: data.photoURL });
+                console.log('✅ Аватарка обновлена в Auth');
+            }
         }
         return { success: true };
     } catch (error) {
+        console.error('❌ Ошибка обновления профиля:', error);
         return { success: false, error: error.message };
     }
 }
@@ -160,6 +203,7 @@ async function updateUserProfile(uid, data) {
 async function addComment(titleId, text, rating) {
     const user = getCurrentUser();
     if (!user) {
+        console.log('❌ Не авторизован');
         return { success: false, error: "Необходимо авторизоваться" };
     }
     
@@ -178,8 +222,10 @@ async function addComment(titleId, text, rating) {
             rating: rating || 5,
             time: serverTimestamp()
         });
+        console.log('✅ Комментарий добавлен:', docRef.id);
         return { success: true, id: docRef.id };
     } catch (error) {
+        console.error('❌ Ошибка добавления комментария:', error);
         return { success: false, error: error.message };
     }
 }
@@ -187,6 +233,7 @@ async function addComment(titleId, text, rating) {
 // Получить комментарии для тайтла
 async function getComments(titleId) {
     try {
+        console.log('📖 Загрузка комментариев для:', titleId);
         const q = query(
             collection(db, "comments"),
             where("titleId", "==", titleId),
@@ -195,31 +242,27 @@ async function getComments(titleId) {
         const querySnapshot = await getDocs(q);
         const comments = [];
         querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            // Если у комментария нет photoURL, пробуем получить из users
-            comments.push({ 
-                id: doc.id, 
-                ...data,
-                // Если photoURL пустой, используем дефолтную аватарку
-                photoURL: data.photoURL || ''
-            });
+            comments.push({ id: doc.id, ...doc.data() });
         });
+        console.log(`✅ Загружено ${comments.length} комментариев`);
         return comments;
     } catch (error) {
-        console.error("Ошибка загрузки комментариев:", error);
+        console.error('❌ Ошибка загрузки комментариев:', error);
         return [];
     }
 }
 
-// Удалить комментарий (только свой)
+// Удалить комментарий
 async function deleteComment(commentId) {
     const user = getCurrentUser();
     if (!user) return { success: false, error: "Не авторизован" };
     
     try {
         await deleteDoc(doc(db, "comments", commentId));
+        console.log('✅ Комментарий удалён:', commentId);
         return { success: true };
     } catch (error) {
+        console.error('❌ Ошибка удаления комментария:', error);
         return { success: false, error: error.message };
     }
 }
@@ -240,7 +283,8 @@ export {
     updateUserProfile,
     addComment,
     getComments,
-    deleteComment
+    deleteComment,
+    resetPassword
 };
 
 console.log('✅ Firebase подключён');

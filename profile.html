@@ -42,9 +42,6 @@
             outline: none;
             box-shadow: 0 0 20px rgba(208, 0, 255, 0.2);
         }
-        .profile-field input::placeholder {
-            color: #666;
-        }
         .save-btn {
             padding: 14px 40px;
             font-size: 18px;
@@ -60,62 +57,17 @@
         .save-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
-            background: linear-gradient(135deg, #8a0a8a, #4a0045);
         }
         .save-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
-        .success-msg {
-            background: #1a3a1a;
-            color: #4CAF50;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin: 10px auto;
-            max-width: 400px;
-            display: none;
-        }
-        .error-msg {
-            background: #3a0035;
-            color: #ff6b6b;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin: 10px auto;
-            max-width: 400px;
-            display: none;
-        }
-        .profile-info {
-            color: #aaa;
-            font-size: 14px;
-            margin-top: 20px;
-        }
-        .logout-btn {
-            padding: 14px 40px;
-            font-size: 18px;
-            margin-top: 20px;
-            background: #3a0035;
-            color: #ff6b6b;
-            border: 2px solid #6d076d;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .logout-btn:hover {
-            background: #4a0045;
-            border-color: #ff6b6b;
-            transform: translateY(-2px);
-        }
-        .avatar-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #6d076d;
-            margin: 10px auto;
-            display: block;
-        }
+        .success-msg { background: #1a3a1a; color: #4CAF50; padding: 10px 20px; border-radius: 10px; margin: 10px auto; max-width: 400px; display: none; }
+        .error-msg { background: #3a0035; color: #ff6b6b; padding: 10px 20px; border-radius: 10px; margin: 10px auto; max-width: 400px; display: none; }
+        .profile-info { color: #aaa; font-size: 14px; margin-top: 20px; }
+        .logout-btn { padding: 14px 40px; font-size: 18px; margin-top: 20px; background: #3a0035; color: #ff6b6b; border: 2px solid #6d076d; border-radius: 50px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .logout-btn:hover { background: #4a0045; border-color: #ff6b6b; transform: translateY(-2px); }
+        .avatar-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #6d076d; margin: 10px auto; display: block; }
     </style>
 </head>
 <body>
@@ -158,7 +110,6 @@
     let currentUserData = null;
     let currentUid = null;
 
-    // Обновление кнопки авторизации в хедере
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
         if (user) {
@@ -170,7 +121,6 @@
         }
     }
 
-    // Показать сообщение
     function showMessage(type, text) {
         const successEl = document.getElementById('successMsg');
         const errorEl = document.getElementById('errorMsg');
@@ -189,7 +139,6 @@
         }, 5000);
     }
 
-    // Сохранение профиля
     window.saveProfile = async function() {
         const nameInput = document.getElementById('profileName');
         const avatarInput = document.getElementById('profileAvatar');
@@ -224,7 +173,6 @@
         const result = await updateUserProfile(currentUid, updateData);
         if (result.success) {
             showMessage('success', 'Профиль обновлён!');
-            // Обновляем данные
             const newData = await getUserData(currentUid);
             if (newData.success) {
                 currentUserData = newData.data;
@@ -238,7 +186,6 @@
         saveBtn.textContent = '💾 Сохранить';
     };
 
-    // Выход
     window.handleLogout = async function() {
         if (!confirm('Вы уверены, что хотите выйти?')) return;
         const result = await logoutUser();
@@ -249,7 +196,6 @@
         }
     };
 
-    // Рендер профиля
     function renderProfile(data) {
         const container = document.getElementById('profileContent');
         const avatarUrl = data.photoURL || '';
@@ -288,7 +234,6 @@
             <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
         `;
         
-        // Превью аватарки при вводе
         const avatarInput = document.getElementById('profileAvatar');
         if (avatarInput) {
             avatarInput.addEventListener('input', function() {
@@ -313,16 +258,18 @@
         }
     }
 
-    // Загрузка профиля
     async function loadProfile() {
         const container = document.getElementById('profileContent');
         const user = getCurrentUser();
+        
+        console.log('📖 Загрузка профиля, пользователь:', user);
         
         if (!user) {
             updateAuthButton(null);
             container.innerHTML = `
                 <h2 class="title">🔒 Вы не авторизованы</h2>
                 <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
+                <p style="color:#666;font-size:14px;">Если вы только что зарегистрировались, попробуйте обновить страницу</p>
                 <br>
                 <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none; display:inline-block;">🔑 Войти</a>
             `;
@@ -340,7 +287,10 @@
             container.innerHTML = `
                 <h2 class="title">❌ Ошибка загрузки</h2>
                 <p style="color:#ff6b6b;">${result.error}</p>
+                <p style="color:#666;font-size:14px;">Попробуйте перезагрузить страницу или выйти и войти заново</p>
                 <br>
+                <button onclick="handleLogout()" class="logout-btn" style="display:inline-block;">🚪 Выйти и войти заново</button>
+                <br><br>
                 <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
             `;
         }
@@ -348,10 +298,11 @@
 
     // Следим за состоянием авторизации
     onAuthStateChangedListener((user) => {
+        console.log('🔄 onAuthStateChanged:', user);
         updateAuthButton(user);
         if (!user) {
             const container = document.getElementById('profileContent');
-            if (container) {
+            if (container && !container.innerHTML.includes('Вы не авторизованы')) {
                 container.innerHTML = `
                     <h2 class="title">🔒 Вы не авторизованы</h2>
                     <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
@@ -359,6 +310,9 @@
                     <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none; display:inline-block;">🔑 Войти</a>
                 `;
             }
+        } else if (user && !currentUserData) {
+            // Пользователь есть, но данные не загружены — загружаем
+            loadProfile();
         }
     });
 
