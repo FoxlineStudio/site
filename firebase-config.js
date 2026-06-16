@@ -29,12 +29,13 @@ import {
 // 🔥 ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ FIREBASE CONSOLE
 // ============================================================
 const firebaseConfig = {
-    apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
-    authDomain: "foxline-studio.firebaseapp.com",
-    projectId: "foxline-studio",
-    storageBucket: "foxline-studio.firebasestorage.app",
-    messagingSenderId: "91239326767",
-    appId: "1:91239326767:web:7488b92e5cf0a3d188fa82"
+  apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
+  authDomain: "foxline-site.firebaseapp.com",
+  projectId: "foxline-site",
+  storageBucket: "foxline-site.firebasestorage.app",
+  messagingSenderId: "233149428799",
+  appId: "1:233149428799:web:1712345a9fb0da0669348a",
+  measurementId: "G-YTC21D3KMN"
 };
 
 // Инициализация
