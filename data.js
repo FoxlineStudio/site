@@ -188,19 +188,16 @@ const voicesDatabase = [
         bio: 'Мое почтение дамы и господа, с вами Персиваль. На повестке дня я расскажу о себе как о человеке чья личность все же будет скрыта под богом "Секретно". Мне 23 года проживаю в Великой державе. Днями и ночами напролет этот прохиндей работает на множество структур. А так, кто захочет сам узнает обо мне, ведь я не скрываюсь)',
         social: { vk:'6ap_cuk' }
     },
+    { 
+        id: 'nemo',
+        name: 'Nemo',
+    }
 ];
 
 // ========== РОЛИ ==========
 const rolesDatabase = [
     { titleId: 'dandadan', voiceId: 'runi', character: 'Момо', characterImage: 'images/momo.jpg', episodes: '1-12', type: 'main' },
-    { titleId: 'dandadan', voiceId: 'miki-angel', character: 'Окарун', characterImage: 'images/okarun.jpg', episodes: '1-12', type: 'main' },
-    { titleId: 'molchalivaya_vedma', voiceId: 'runi', character: 'Моника', characterImage: 'images/monica.jpg', episodes: '1-13', type: 'main' },
-    { titleId: 'molchalivaya_vedma', voiceId: 'miki-angel', character: 'Феликс', characterImage: 'images/felix.jpg', episodes: '1-13', type: 'main' },
-    { titleId: 'molchalivaya_vedma', voiceId: 'chep', character: 'Неро', characterImage: 'images/nero.jpg', episodes: '1-13', type: 'main' },
-    { titleId: 'zvezdnoe_ditya', voiceId: 'runi', character: 'Звёздный странник', characterImage: '', episodes: '1-35', type: 'main' },
-    { titleId: 'zvezdnoe_ditya', voiceId: 'miki-angel', character: 'Лунная фея', characterImage: '', episodes: '1-35', type: 'main' },
-    { titleId: 'hellsing', voiceId: 'runi', character: 'Алукард', characterImage: '', episodes: '1-13', type: 'main' },
-    { titleId: 'hellsing', voiceId: 'miki-angel', character: 'Интегра', characterImage: '', episodes: '1-13', type: 'main' },
+    { titleId: 'dandadan', voiceId: 'nemo', character: 'Окарун', characterImage: 'images/okarun.jpg', episodes: '1-12', type: 'main' },
 ];
 
 // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
