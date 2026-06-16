@@ -6,6 +6,7 @@
     <title>Foxline Studio - Главная</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <script type="module" src="firebase-config.js"></script>
     <style>
         .featured-grid {
             display: flex;
@@ -27,37 +28,31 @@
             cursor: pointer;
             transition: transform 0.3s;
         }
+        .featured-image:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
 
-<!-- ФИКСИРОВАННАЯ ВЕРХНЯЯ ПАНЕЛЬ -->
 <header class="fixed-header">
     <div class="nav-buttons">
-    <a href="index.html">
-        <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
-    </a>
-        <a href="index.html" class="nav-icon-btn">
-            🏠Главная
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
         </a>
-        <a href="titles.html" class="nav-icon-btn">
-            🎦Тайтлы
-        </a>
-        <a href="sostav.html" class="nav-icon-btn">
-            🎭Состав
-        </a>
-        <a href="search.html" class="nav-icon-btn">
-            🔍Поиск
-        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+        <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
 
-<!-- ОСНОВНОЙ КОНТЕНТ -->
 <div class="container">
     <div class="header">
         <hr>
         <a href="index.html">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240" onerror="this.src='https://via.placeholder.com/240/001a8c/ffffff?text=foxline'">
+            <img src="logo2.jpg" alt="foxline Studio" class="avatar">
         </a>
         <hr>
     </div>
@@ -96,27 +91,53 @@
     <p>© 2026 Foxline Studio. Все права защищены.</p>
 </div>
 
-<script>
+<script type="module">
+    import { getCurrentUser, onAuthStateChangedListener } from './firebase-config.js';
+
+    function updateAuthButton(user) {
+        const btn = document.getElementById('authBtn');
+        if (user) {
+            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            btn.href = 'profile.html';
+        } else {
+            btn.textContent = '🔑 Вход';
+            btn.href = 'login.html';
+        }
+    }
+
     function loadFeaturedTitles() {
         const container = document.getElementById('featured-titles');
         if (window.titlesDatabase && window.titlesDatabase.length > 0) {
             const titles = window.titlesDatabase.slice(0, 3);
-            container.innerHTML = titles.map(title => `
-            <div class='content-box2'>
-                <div class="featured-item">
-                    <a href="title.html?id=${title.id}">
-                        <img src="${title.image}" alt="${title.name}" style="width:100%; height:160px; object-fit:cover; border-radius:10px;" onerror="this.src='https://via.placeholder.com/280x160/001a8c/ffffff?text=${encodeURIComponent(title.name)}'">
-                    </a>
-                    <p><strong>${title.name}</strong></p>
-                    <p>${title.episodes} серий</p>
-                </div>
-            </div>
-            `).join('');
+            container.innerHTML = titles.map(title => {
+                // Используем ВЕРТИКАЛЬНУЮ обложку для карточек
+                const image = title.imageVertical || title.imageHorizontal || title.image;
+                return `
+                    <div class='content-box2'>
+                        <div class="featured-item">
+                            <a href="title.html?id=${title.id}">
+                                <img src="${image}" alt="${title.name}" class="featured-image" onerror="this.src='https://via.placeholder.com/280x160/6d076d/fff?text=${encodeURIComponent(title.name)}'">
+                            </a>
+                            <p style="color:#fff;"><strong>${title.name}</strong></p>
+                            <p style="color:#aaa;">${title.episodes} серий</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         } else {
-            container.innerHTML = '<p>Загрузка данных...</p>';
+            container.innerHTML = '<p style="color:#aaa;">Загрузка данных...</p>';
         }
     }
-    document.addEventListener('DOMContentLoaded', loadFeaturedTitles);
+
+    onAuthStateChangedListener((user) => {
+        updateAuthButton(user);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFeaturedTitles();
+        updateAuthButton(getCurrentUser());
+    });
 </script>
+
 </body>
 </html>

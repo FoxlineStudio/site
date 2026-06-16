@@ -1,18 +1,20 @@
 // ========== ТАЙТЛЫ ==========
 const titlesDatabase = [
     {
-        id: '',
-        name: 'Молчаливая ведьма',
-        nameEn: 'The Silent Witch',
-        image: 'images/molch_vedma.jpg',
+        id: 'dandadan',
+        name: 'ДанДаДан',
+        nameEn: 'DanDaDan',
+        // ВЕРТИКАЛЬНАЯ обложка (для карточек, списка тайтлов)
+        imageVertical: 'images/dandadan_vert.jpg',
+        // ГОРИЗОНТАЛЬНАЯ обложка (для страницы тайтла, баннеров)
+        imageHorizontal: 'images/dandadan_horiz.jpg',
         type: 'Аниме',
         seasons: 1,
-        episodes: 13,
-        year: 2025,
-        rating: 4.8,
-        genres: ['Фэнтези', 'Драма', 'Комедия', 'Школьная жизнь'],
-        description: 'Моника Эверетт — молчаливая ведьма, которая скрывает свои невероятные способности.',
-        // Список серий с ссылками на Google Drive
+        episodes: 12,
+        year: 2024,
+        rating: 5,
+        genres: ['Комедия', 'Экшен', 'Романтика'],
+        description: 'Момо и Окарун — обычные старшеклассники, которые вдруг сталкиваются с пришельцами и духами. Их жизнь переворачивается с ног на голову!',
         episodesList: [
             { number: 1, title: 'Первая серия', url: 'https://drive.google.com/file/d/XXXXX1/preview', status: 'Озвучено' },
             { number: 2, title: 'Вторая серия', url: 'https://drive.google.com/file/d/XXXXX2/preview', status: 'Озвучено' },
@@ -26,7 +28,6 @@ const titlesDatabase = [
             { number: 10, title: 'Десятая серия', url: '', status: 'Скоро' },
             { number: 11, title: 'Одиннадцатая серия', url: '', status: 'Скоро' },
             { number: 12, title: 'Двенадцатая серия', url: '', status: 'Скоро' },
-            { number: 13, title: 'Тринадцатая серия', url: '', status: 'Скоро' }
         ]
     },
 ];
@@ -178,16 +179,15 @@ const voicesDatabase = [
     },
 ];
 
-// ========== РОЛИ (СВЯЗЬ ДАББЕРОВ С ТАЙТЛАМИ) ==========
+// ========== РОЛИ ==========
 const rolesDatabase = [
-    // МОЛЧАЛИВАЯ ВЕДЬМА
+    { titleId: 'dandadan', voiceId: 'runi', character: 'Момо', characterImage: 'images/momo.jpg', episodes: '1-12', type: 'main' },
+    { titleId: 'dandadan', voiceId: 'miki-angel', character: 'Окарун', characterImage: 'images/okarun.jpg', episodes: '1-12', type: 'main' },
     { titleId: 'molchalivaya_vedma', voiceId: 'runi', character: 'Моника', characterImage: 'images/monica.jpg', episodes: '1-13', type: 'main' },
     { titleId: 'molchalivaya_vedma', voiceId: 'miki-angel', character: 'Феликс', characterImage: 'images/felix.jpg', episodes: '1-13', type: 'main' },
     { titleId: 'molchalivaya_vedma', voiceId: 'chep', character: 'Неро', characterImage: 'images/nero.jpg', episodes: '1-13', type: 'main' },
-    // ЗВЁЗДНОЕ ДИТЯ
     { titleId: 'zvezdnoe_ditya', voiceId: 'runi', character: 'Звёздный странник', characterImage: '', episodes: '1-35', type: 'main' },
     { titleId: 'zvezdnoe_ditya', voiceId: 'miki-angel', character: 'Лунная фея', characterImage: '', episodes: '1-35', type: 'main' },
-    // ХЕЛЛСИНГ
     { titleId: 'hellsing', voiceId: 'runi', character: 'Алукард', characterImage: '', episodes: '1-13', type: 'main' },
     { titleId: 'hellsing', voiceId: 'miki-angel', character: 'Интегра', characterImage: '', episodes: '1-13', type: 'main' },
 ];

@@ -2,19 +2,159 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="logo.jpg" alt="foxline" class="avatar" width="200">
-            <h1>Вход в аккаунт</h1>
-        </div>
-        <div class="content-box" style="text-align:center">
-            <p>Функция регистрации временно недоступна.</p>
-            <a href="index.html" class="nav-button">Вернуться на главную</a>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <hr>
+    </div>
+    
+    <div class="content-box">
+        <div id="authContainer">
+            <!-- Форма входа -->
+            <div id="loginForm">
+                <h2 class="title" style="text-align:center;">🔐 Вход</h2>
+                <div style="max-width:400px; margin:0 auto;">
+                    <input type="email" id="loginEmail" placeholder="Email" style="width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; font-size:16px;">
+                    <input type="password" id="loginPassword" placeholder="Пароль" style="width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; font-size:16px;">
+                    <button onclick="handleLogin()" class="search-button" style="width:100%; padding:14px; font-size:18px;">Войти</button>
+                    <p style="text-align:center; margin-top:15px; color:#aaa;">
+                        Нет аккаунта? <a href="#" onclick="showRegister()" style="color:#d000ff;">Зарегистрироваться</a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Форма регистрации (скрыта по умолчанию) -->
+            <div id="registerForm" style="display:none;">
+                <h2 class="title" style="text-align:center;">📝 Регистрация</h2>
+                <div style="max-width:400px; margin:0 auto;">
+                    <input type="text" id="registerName" placeholder="Имя" style="width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; font-size:16px;">
+                    <input type="email" id="registerEmail" placeholder="Email" style="width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; font-size:16px;">
+                    <input type="password" id="registerPassword" placeholder="Пароль (мин. 6 символов)" style="width:100%; padding:14px; margin:10px 0; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; font-size:16px;">
+                    <button onclick="handleRegister()" class="search-button" style="width:100%; padding:14px; font-size:18px;">Зарегистрироваться</button>
+                    <p style="text-align:center; margin-top:15px; color:#aaa;">
+                        Уже есть аккаунт? <a href="#" onclick="showLogin()" style="color:#d000ff;">Войти</a>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Сообщения -->
+            <div id="authMessage" style="text-align:center; margin-top:20px; padding:10px; border-radius:10px; display:none;"></div>
         </div>
     </div>
+</div>
+
+<script type="module">
+    import { 
+        loginUser, 
+        registerUser, 
+        getCurrentUser,
+        onAuthStateChangedListener 
+    } from './firebase-config.js';
+
+    // Переключение между формами
+    window.showRegister = function() {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('registerForm').style.display = 'block';
+        document.getElementById('authMessage').style.display = 'none';
+    };
+    
+    window.showLogin = function() {
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('authMessage').style.display = 'none';
+    };
+
+    // Вход
+    window.handleLogin = async function() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        const msg = document.getElementById('authMessage');
+        
+        if (!email || !password) {
+            msg.style.display = 'block';
+            msg.style.background = '#3a0035';
+            msg.style.color = '#ff6b6b';
+            msg.textContent = '❌ Заполните все поля';
+            return;
+        }
+        
+        const result = await loginUser(email, password);
+        if (result.success) {
+            msg.style.display = 'block';
+            msg.style.background = '#1a3a1a';
+            msg.style.color = '#4CAF50';
+            msg.textContent = '✅ Вход выполнен! Перенаправление...';
+            setTimeout(() => window.location.href = 'index.html', 1500);
+        } else {
+            msg.style.display = 'block';
+            msg.style.background = '#3a0035';
+            msg.style.color = '#ff6b6b';
+            msg.textContent = '❌ ' + result.error;
+        }
+    };
+
+    // Регистрация
+    window.handleRegister = async function() {
+        const name = document.getElementById('registerName').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const msg = document.getElementById('authMessage');
+        
+        if (!name || !email || !password) {
+            msg.style.display = 'block';
+            msg.style.background = '#3a0035';
+            msg.style.color = '#ff6b6b';
+            msg.textContent = '❌ Заполните все поля';
+            return;
+        }
+        
+        if (password.length < 6) {
+            msg.style.display = 'block';
+            msg.style.background = '#3a0035';
+            msg.style.color = '#ff6b6b';
+            msg.textContent = '❌ Пароль должен быть минимум 6 символов';
+            return;
+        }
+        
+        const result = await registerUser(email, password, name);
+        if (result.success) {
+            msg.style.display = 'block';
+            msg.style.background = '#1a3a1a';
+            msg.style.color = '#4CAF50';
+            msg.textContent = '✅ Регистрация успешна! Перенаправление...';
+            setTimeout(() => window.location.href = 'index.html', 1500);
+        } else {
+            msg.style.display = 'block';
+            msg.style.background = '#3a0035';
+            msg.style.color = '#ff6b6b';
+            msg.textContent = '❌ ' + result.error;
+        }
+    };
+
+    // Если уже авторизован — перенаправить на главную
+    const user = getCurrentUser();
+    if (user) {
+        window.location.href = 'index.html';
+    }
+</script>
+
 </body>
 </html>

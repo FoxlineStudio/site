@@ -2,19 +2,85 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="firebase-config.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="logo.jpg" alt="foxline" class="avatar" width="200">
-            <h1>Личный кабинет</h1>
-        </div>
-        <div class="content-box" style="text-align:center">
-            <p>Страница профиля будет доступна после регистрации.</p>
-            <a href="index.html" class="nav-button">На главную</a>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+        <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <hr>
+    </div>
+    
+    <div class="content-box">
+        <div id="profileContent" style="text-align:center; padding:20px;">
+            <div class="loading">Загрузка...</div>
         </div>
     </div>
+</div>
+
+<script type="module">
+    import { getCurrentUser, logoutUser, onAuthStateChangedListener } from './firebase-config.js';
+
+    function updateProfile() {
+        const user = getCurrentUser();
+        const container = document.getElementById('profileContent');
+        const authBtn = document.getElementById('authBtn');
+
+        if (user) {
+            authBtn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            authBtn.href = 'profile.html';
+            
+            container.innerHTML = `
+                <h2 class="title">👤 ${user.displayName || 'Пользователь'}</h2>
+                <p style="color:#aaa;">Email: ${user.email}</p>
+                <p style="color:#aaa;">UID: ${user.uid}</p>
+                <br>
+                <button onclick="handleLogout()" class="search-button" style="padding:14px 40px; font-size:18px;">🚪 Выйти</button>
+                <br><br>
+                <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
+            `;
+        } else {
+            authBtn.textContent = '🔑 Вход';
+            authBtn.href = 'login.html';
+            container.innerHTML = `
+                <h2 class="title">🔒 Вы не авторизованы</h2>
+                <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
+                <br>
+                <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none;">🔑 Войти</a>
+            `;
+        }
+    }
+
+    window.handleLogout = async function() {
+        if (!confirm('Вы уверены, что хотите выйти?')) return;
+        const result = await logoutUser();
+        if (result.success) {
+            window.location.href = 'index.html';
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    };
+
+    onAuthStateChangedListener(updateProfile);
+    updateProfile();
+</script>
+
 </body>
 </html>

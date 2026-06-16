@@ -6,32 +6,26 @@
     <title>Тайтлы - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <script type="module" src="firebase-config.js"></script>
 </head>
 <body>
 
 <header class="fixed-header">
     <div class="nav-buttons">
-    <a href="index.html">
-        <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
-    </a>
-        <a href="index.html" class="nav-icon-btn">
-            🏠Главная
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
         </a>
-        <a href="titles.html" class="nav-icon-btn">
-            🎦Тайтлы
-        </a>
-        <a href="sostav.html" class="nav-icon-btn">
-            🎭Состав
-        </a>
-        <a href="search.html" class="nav-icon-btn">
-            🔍Поиск
-        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+        <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
 
 <div class="container">
     <div class="header">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
         <h1 class="title">Наши тайтлы</h1>
         <hr>
     </div>
@@ -48,25 +42,51 @@
     <p>© 2026 foxline Studio</p>
 </div>
 
-<script>
+<script type="module">
+    import { getCurrentUser, onAuthStateChangedListener } from './firebase-config.js';
+
+    function updateAuthButton(user) {
+        const btn = document.getElementById('authBtn');
+        if (user) {
+            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            btn.href = 'profile.html';
+        } else {
+            btn.textContent = '🔑 Вход';
+            btn.href = 'login.html';
+        }
+    }
+
     function loadTitles() {
         const container = document.getElementById('titles-container');
         if (window.titlesDatabase && window.titlesDatabase.length > 0) {
-            container.innerHTML = window.titlesDatabase.map(title => `
-                <a href="title.html?id=${title.id}" class="title-card">
-                    <img src="${title.image}" alt="${title.name}" class="title-card-image" onerror="this.src='https://via.placeholder.com/200x280/001a8c/ffffff'">
-                    <div class="title-card-info">
-                        <div class="title-card-name">${title.name}</div>
-                        <div class="title-card-meta">
-                            <span>⚡ ${title.episodes} серий</span>
-                            <span>⭐ ${title.rating}</span>
+            container.innerHTML = window.titlesDatabase.map(title => {
+                // Используем ВЕРТИКАЛЬНУЮ обложку для карточек
+                const image = title.imageVertical || title.imageHorizontal || title.image;
+                return `
+                    <a href="title.html?id=${title.id}" class="title-card">
+                        <img src="${image}" alt="${title.name}" class="title-card-image" onerror="this.src='https://via.placeholder.com/200x280/6d076d/fff?text=${encodeURIComponent(title.name)}'">
+                        <div class="title-card-info">
+                            <div class="title-card-name">${title.name}</div>
+                            <div class="title-card-meta">
+                                <span>⚡ ${title.episodes} серий</span>
+                                <span>⭐ ${title.rating}</span>
+                            </div>
                         </div>
-                    </div>
-                </a>
-            `).join('');
+                    </a>
+                `;
+            }).join('');
         }
     }
-    document.addEventListener('DOMContentLoaded', loadTitles);
+
+    onAuthStateChangedListener((user) => {
+        updateAuthButton(user);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTitles();
+        updateAuthButton(getCurrentUser());
+    });
 </script>
+
 </body>
 </html>
