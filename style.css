@@ -242,6 +242,7 @@ hr {
     .fixed-header {
         flex-direction: column;
         padding: 10px 15px;
+        max-height: 120px;
     }
     
     .nav-buttons {
@@ -332,11 +333,11 @@ hr {
 .stat-number {
     font-size: 32px;
     font-weight: bold;
-    color: #001a8c;
+    color: #a5008f;
 }
 
 .stat-label {
-    font-size: 14px;
+    font-size: 19px;
     color: #666;
     margin-top: 5px;
 }
