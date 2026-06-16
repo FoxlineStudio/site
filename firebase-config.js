@@ -204,14 +204,13 @@ async function updateUserProfile(uid, data) {
 async function addComment(titleId, text, rating) {
     const user = getCurrentUser();
     if (!user) {
-        console.log('❌ Не авторизован');
         return { success: false, error: "Необходимо авторизоваться" };
     }
     
     try {
-        // Получаем актуальное имя пользователя из Firestore
+        // Получаем данные пользователя
         const userData = await getUserData(user.uid);
-        const displayName = userData.success ? userData.data.displayName : (user.displayName || user.email || "Аноним");
+        const displayName = userData.success ? userData.data.displayName : (user.displayName || "Аноним");
         const photoURL = userData.success ? userData.data.photoURL : (user.photoURL || '');
         
         const docRef = await addDoc(collection(db, "comments"), {
@@ -223,7 +222,8 @@ async function addComment(titleId, text, rating) {
             rating: rating || 5,
             time: serverTimestamp()
         });
-        console.log('✅ Комментарий добавлен:', docRef.id);
+        
+        console.log('✅ Комментарий добавлен, ID:', docRef.id);
         return { success: true, id: docRef.id };
     } catch (error) {
         console.error('❌ Ошибка добавления комментария:', error);
