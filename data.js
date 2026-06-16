@@ -4,11 +4,9 @@ const titlesDatabase = [
         id: 'dandadan',
         name: 'ДанДаДан',
         nameEn: 'DanDaDan',
-        // ВЕРТИКАЛЬНАЯ обложка (для карточек, списка тайтлов)
         imageVertical: 'images/dandadan_vert.jpg',
-        // ГОРИЗОНТАЛЬНАЯ обложка (для страницы тайтла, баннеров)
         imageHorizontal: 'images/dandadan_horiz.jpg',
-        type: 'Аниме-сериал',
+        type: 'Сериал',
         seasons: 1,
         episodes: 12,
         year: 2024,
@@ -30,6 +28,92 @@ const titlesDatabase = [
             { number: 12, title: 'Двенадцатая серия', url: '', status: 'Скоро' },
         ]
     },
+    {
+        id: 'tatsuki_fujimoto_17-26',
+        name: 'Тацуки Фудзимото "17-26"',
+        nameEn: 'Tatsuki Fujimoto "17-26"',
+        imageVertical: 'images/fujimoto_vert.jpg',
+        imageHorizontal: 'images/fujimoto_horiz.jpg',
+        type: 'Сериал',
+        seasons: 1,
+        episodes: 8,
+        year: 2025,
+        rating: 4.5,
+        genres: [],
+        description: '',
+        episodesList: [
+            { number: 1, title: 'Серия 1', url: '', status: 'Скоро' },
+            { number: 2, title: 'Серия 2', url: '', status: 'Скоро' },
+            { number: 3, title: 'Серия 3', url: '', status: 'Скоро' },
+            { number: 4, title: 'Серия 4', url: '', status: 'Скоро' },
+            { number: 5, title: 'Серия 5', url: '', status: 'Скоро' },
+            { number: 6, title: 'Серия 6', url: '', status: 'Скоро' },
+            { number: 7, title: 'Серия 7', url: '', status: 'Скоро' },
+            { number: 8, title: 'Серия 8', url: '', status: 'Скоро' },
+        ]
+    },
+    {
+        id: 'trapezoid',
+        name: 'Трапеция',
+        nameEn: 'Trapezoid',
+        imageVertical: 'images/trapeze_vert.jpg',
+        imageHorizontal: 'images/trapeze_horiz.jpg',
+        type: 'Фильм',
+        seasons: 1,
+        episodes: 1,
+        year: 2024,
+        rating: 4.0,
+        genres: [],
+        description: '',
+        episodesList: [
+            { number: 1, title: 'Фильм', url: '', status: 'Скоро' },
+        ]
+    },
+    {
+        id: 'alice_and_theresa',
+        name: 'Фабрика иллюзий Алисы и Терезы',
+        nameEn: 'Alice and Theresa\'s Illusion Factory',
+        imageVertical: 'images/alice_theresa_vert.jpg',
+        imageHorizontal: 'images/alice_theresa_horiz.jpg',
+        type: 'Фильм',
+        seasons: 1,
+        episodes: 1,
+        year: 2023,
+        rating: 4.2,
+        genres: [],
+        description: '',
+        episodesList: [
+            { number: 1, title: 'Фильм', url: '', status: 'Скоро' },
+        ]
+    },
+    {
+        id: 'promised_neverland',
+        name: 'Обещанный Неверленд',
+        nameEn: 'The Promised Neverland',
+        imageVertical: 'images/neverland_vert.jpg',
+        imageHorizontal: 'images/neverland_horiz.jpg',
+        type: 'Сериал',
+        seasons: 1,
+        episodes: 12,
+        year: 2019,
+        rating: 4.8,
+        genres: [],
+        description: '',
+        episodesList: [
+            { number: 1, title: 'Серия 1', url: '', status: 'Скоро' },
+            { number: 2, title: 'Серия 2', url: '', status: 'Скоро' },
+            { number: 3, title: 'Серия 3', url: '', status: 'Скоро' },
+            { number: 4, title: 'Серия 4', url: '', status: 'Скоро' },
+            { number: 5, title: 'Серия 5', url: '', status: 'Скоро' },
+            { number: 6, title: 'Серия 6', url: '', status: 'Скоро' },
+            { number: 7, title: 'Серия 7', url: '', status: 'Скоро' },
+            { number: 8, title: 'Серия 8', url: '', status: 'Скоро' },
+            { number: 9, title: 'Серия 9', url: '', status: 'Скоро' },
+            { number: 10, title: 'Серия 10', url: '', status: 'Скоро' },
+            { number: 11, title: 'Серия 11', url: '', status: 'Скоро' },
+            { number: 12, title: 'Серия 12', url: '', status: 'Скоро' },
+        ]
+    }
 ];
 
 // ========== ДАББЕРЫ ==========
