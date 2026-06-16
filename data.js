@@ -8,7 +8,7 @@ const titlesDatabase = [
         imageVertical: 'images/dandadan_vert.jpg',
         // ГОРИЗОНТАЛЬНАЯ обложка (для страницы тайтла, баннеров)
         imageHorizontal: 'images/dandadan_horiz.jpg',
-        type: 'Аниме',
+        type: 'Аниме-сериал',
         seasons: 1,
         episodes: 12,
         year: 2024,
