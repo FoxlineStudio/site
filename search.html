@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск - foxline Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data.js"></script>
+</head>
+<body>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+    <a href="index.html">
+        <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+    </a>
+        <a href="index.html" class="nav-icon-btn">
+            🏠Главная
+        </a>
+        <a href="titles.html" class="nav-icon-btn">
+            🎦Тайтлы
+        </a>
+        <a href="sostav.html" class="nav-icon-btn">
+            🎭Состав
+        </a>
+        <a href="search.html" class="nav-icon-btn">
+            🔍Поиск
+        </a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
+        <hr>
+    </div>
+    
+    <div class="content-box">
+        <div style="display: flex; justify-content: center; margin-bottom: 30px;">
+            <form action="search.html" method="get" style="display: flex; width: 100%; max-width: 500px; gap: 10px;">
+                <input type="text" name="q" placeholder="🔍 Поиск по тайтлам и дабберам..." 
+                       style="flex: 1; padding: 12px 20px; border: 2px solid #001a8c; border-radius: 50px; font-size: 16px; outline: none;" id="searchInput">
+                <button type="submit" class="nav-button" style="padding: 12px 25px;">Найти</button>
+            </form>
+        </div>
+        <div id="search-results" class="loading">Введите поисковый запрос</div>
+    </div>
+</div>
+
+<script>
+    const query = new URLSearchParams(window.location.search).get('q');
+    function performSearch() {
+        const container = document.getElementById('search-results');
+        if (!query || query.trim() === '') {
+            container.innerHTML = '<div class="loading">🔍 Введите поисковый запрос</div>';
+            return;
+        }
+        const results = window.searchDatabase?.(query) || { titles: [], voices: [] };
+        let html = `<h2>Результаты по запросу: "${query}"</h2><p>Найдено: ${results.titles.length + results.voices.length}</p><hr>`;
+        if (results.titles.length > 0) {
+            html += '<h3>🎬 Тайтлы</h3>';
+            results.titles.forEach(t => {
+                html += `<a href="title.html?id=${t.id}" style="display:flex; align-items:center; gap:15px; padding:10px; background:white; margin-bottom:8px; border-radius:10px; text-decoration:none; color:inherit;">
+                            <img src="${t.image}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/50'">
+                            <div><strong>${t.name}</strong><br><small>${t.type}</small></div>
+                         </a>`;
+            });
+        }
+        if (results.voices.length > 0) {
+            html += '<h3>🎭 Дабберы</h3>';
+            results.voices.forEach(v => {
+                html += `<a href="voice.html?id=${v.id}" style="display:flex; align-items:center; gap:15px; padding:10px; background:white; margin-bottom:8px; border-radius:10px; text-decoration:none; color:inherit;">
+                            <img src="${v.image}" style="width:50px; height:50px; object-fit:cover; border-radius:50%;" onerror="this.src='https://via.placeholder.com/50'">
+                            <div><strong>${v.name}</strong><br><small>${v.status}</small></div>
+                         </a>`;
+            });
+        }
+        if (results.titles.length === 0 && results.voices.length === 0) html += '<p>😕 Ничего не найдено</p>';
+        container.innerHTML = html;
+    }
+    document.addEventListener('DOMContentLoaded', performSearch);
+    if (query) document.getElementById('searchInput') && (document.getElementById('searchInput').value = query);
+</script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Даббер - foxline Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data.js"></script>
+    <style>
+        .voice-profile {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #35002f, #1e001a);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .voice-avatar-large {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #4c004f;
+            box-shadow: 0 0 20px rgba(107, 0, 91, 0.3);
+        }
+        
+        .voice-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .voice-name {
+            font-size: 36px;
+            color: #8c0085;
+            margin: 0 0 10px 0;
+        }
+        
+        .voice-status {
+            display: inline-block;
+            background: linear-gradient(135deg, #460057, #320063);
+            color: rgb(255, 255, 255);
+            padding: 5px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .voice-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .voice-meta-item {
+            background: #b600a0;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            color: rgb(255, 255, 255);
+        }
+        
+        .voice-bio {
+            background: rgb(138, 0, 106);
+            padding: 15px;
+            border-radius: 10px;
+            line-height: 1.6;
+            margin: 15px 0;
+            border-left: 4px solid #ff00cc;
+            color: rgb(255, 255, 255);
+        }
+        
+        .voice-social {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: #c900b8;
+            color: #78005c;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 19px;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            background: #d500dc;
+            color: white;
+        }
+        
+        .titles-section {
+            margin-top: 40px;
+        }
+        
+        .title-card-voice {
+            display: flex;
+            gap: 20px;
+            background: rgb(117, 0, 111);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .title-card-voice:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .title-card-voice-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+        
+        .title-card-voice-info {
+            flex: 1;
+        }
+        
+        .title-card-voice-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e900ba;
+            margin-bottom: 5px;
+        }
+        
+        .roles-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .role-badge.main {
+            background: #8c0096;
+            color: white;
+        }
+        
+        .role-badge.recurring {
+            background: #320063;
+            color: white;
+        }
+        
+        .role-badge.supporting {
+            background: #666;
+            color: white;
+        }
+        
+        .role-badge.guest {
+            background: #ffaa00;
+            color: #001a8c;
+        }
+        
+        .role-character {
+            font-weight: bold;
+        }
+        
+        .role-episodes {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .not-found {
+            text-align: center;
+            padding: 50px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        
+        .stats-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            flex: 1;
+            min-width: 120px;
+            background: rgb(96, 0, 78);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #c100b4;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #001a8c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="fixed-header">
+    <div class="nav-buttons">
+    <a href="index.html">
+        <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+    </a>
+        <a href="index.html" class="nav-icon-btn">
+            🏠Главная
+        </a>
+        <a href="titles.html" class="nav-icon-btn">
+            🎦Тайтлы
+        </a>
+        <a href="sostav.html" class="nav-icon-btn">
+            🎭Состав
+        </a>
+        <a href="search.html" class="nav-icon-btn">
+            🔍Поиск
+        </a>
+    </div>
+</header>
+
+    <div class="container">
+        <div class="header">
+            <hr>
+            <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
+            <hr>
+        </div>
+        
+        <div class="content-box" id="voice-content">
+            <div class="loading">Загрузка...</div>
+        </div>
+    </div>
+
+    <div class="container" style="text-align: center;">
+        <hr>
+        <p>© 2026 foxline Studio</p>
+    </div>
+
+    <script>
+        const voiceId = new URLSearchParams(window.location.search).get('id');
+        
+        function loadVoice() {
+            const container = document.getElementById('voice-content');
+            setTimeout(() => {
+                const voice = window.getVoiceById?.(voiceId);
+                
+                if (!voice) {
+                    container.innerHTML = '<div style="text-align:center; padding:50px;">❌ Даббер не найден</div>';
+                    return;
+                }
+                
+                const titles = window.getTitlesByVoiceId?.(voiceId) || [];
+                const stats = window.getVoiceStats?.(voiceId) || { totalTitles: titles.length, totalRoles: 0, mainRoles: 0 };
+                
+                let socialHtml = '';
+                if (voice.social) {
+                    if (voice.social.telegram) socialHtml += `<a href="https://t.me/${voice.social.telegram}" target="_blank" class="social-link">📱 Telegram</a>`;
+                    if (voice.social.vk) socialHtml += `<a href="https://vk.com/${voice.social.vk}" target="_blank" class="social-link">📘 VK</a>`;
+                    if (voice.social.github) socialHtml += `<a href="https://github.com/${voice.social.github}" target="_blank" class="social-link">🐙 GitHub</a>`;
+                }
+                
+                let titlesHtml = '';
+                if (titles.length > 0) {
+                    titlesHtml = '<h2 class="title">Участие в проектах</h2>';
+                    titles.forEach(title => {
+                        const roles = title.roles || [];
+                        titlesHtml += `
+                            <a href="title.html?id=${title.id}" class="title-card-voice">
+                                <img src="${title.image}" class="title-card-voice-image" onerror="this.src='https://via.placeholder.com/80/001a8c/ffffff'">
+                                <div>
+                                    <div class="title-card-voice-name">${title.name}</div>
+                                    <div class="roles-list">
+                                        ${roles.map(r => `<span class="role-badge ${r.type}">${r.character}</span>`).join('')}
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                }
+                
+                container.innerHTML = `
+                    <div class="voice-profile">
+                        <img src="${voice.image}" class="voice-avatar-large" onerror="this.src='https://via.placeholder.com/200/001a8c/ffffff'">
+                        <div>
+                            <h1 class="voice-name">${voice.name}</h1>
+                            <span class="voice-status">${voice.status}</span>
+                            <div class="voice-meta">
+                                <span class="voice-meta-item">📅 В команде с ${voice.joinDate}</span>
+                                <span class="voice-meta-item">🎭 ${stats.totalRoles} ролей</span>
+                                <span class="voice-meta-item">🎬 ${stats.totalTitles} проектов</span>
+                            </div>
+                            ${voice.bio ? `<div class="voice-bio">${voice.bio}</div>` : ''}
+                            ${socialHtml ? `<div class="voice-social">${socialHtml}</div>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box"><div class="stat-number">${stats.totalTitles}</div><div class="text">Проектов</div></div>
+                        <div class="stat-box"><div class="stat-number">${stats.totalRoles}</div><div class="text">Всего ролей</div></div>
+                        <div class="stat-box"><div class="stat-number">${stats.mainRoles}</div><div class="text">Главных ролей</div></div>
+                    </div>
+                    
+                    ${titlesHtml}
+                `;
+            }, 100);
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadVoice);
+    </script>
+</body>
+</html>

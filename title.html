@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр - foxline Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data.js"></script>
+</head>
+<body>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <hr>
+    </div>
+    
+    <div class="content-box" id="title-content">
+        <div class="loading">Загрузка...</div>
+    </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
+</div>
+
+<script>
+    const titleId = new URLSearchParams(window.location.search).get('id');
+
+    function loadTitle() {
+        const content = document.getElementById('title-content');
+        
+        setTimeout(() => {
+            const title = window.getTitleById?.(titleId) || window.titlesDatabase?.find(t => t.id === titleId);
+            
+            if (!title) {
+                content.innerHTML = '<div style="text-align:center; padding:50px; color:#fff;">❌ Тайтл не найден</div>';
+                return;
+            }
+
+            // Получаем роли для этого тайтла
+            const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
+            
+            let charactersHtml = '';
+            if (roles.length > 0) {
+                charactersHtml = '<h2 style="color:#d000ff;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
+                roles.forEach(role => {
+                    const voice = window.voicesDatabase?.find(v => v.id === role.voiceId);
+                    charactersHtml += `
+                        <div class="character-card">
+                            <img src="${role.characterImage || 'https://via.placeholder.com/180x150/3a0035/fff?text=Персонаж'}" class="character-image" onerror="this.src='https://via.placeholder.com/180x150/3a0035/fff?text=?'">
+                            <div class="character-name">${role.character}</div>
+                            <p style="color:#aaa;">Озвучивает: <a href="voice.html?id=${role.voiceId}" style="color:#d000ff;">${voice?.name || role.voiceId}</a></p>
+                        </div>
+                    `;
+                });
+                charactersHtml += '</div>';
+            }
+
+            // Получаем список серий из data.js
+            const episodes = title.episodesList || [];
+            
+            let episodesHtml = '';
+            if (episodes.length > 0) {
+                episodesHtml = `
+                    <h2 style="color:#d000ff; margin-top:30px;">📺 Список серий</h2>
+                    <div class="episodes-list">
+                        ${episodes.map(ep => `
+                            <div class="episode-item" onclick="playEpisode('${ep.url}')" style="cursor:pointer;">
+                                <span class="episode-number">Серия ${ep.number}</span>
+                                <span class="episode-title" style="color:#fff;">${ep.title}</span>
+                                <span class="episode-status ${ep.status === 'Озвучено' ? 'status-ready' : 'status-soon'}">${ep.status}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Плеер (первая серия по умолчанию)
+            const firstEpisode = episodes.find(ep => ep.url) || { url: '' };
+
+            content.innerHTML = `
+                <div class="anime-header">
+                    <img src="${title.image}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
+                    <div class="anime-info">
+                        <h1 class="anime-title" style="color:#d000ff;">${title.name}</h1>
+                        <div class="anime-meta">
+                            <span class="anime-tag">${title.type || 'Аниме'}</span>
+                            <span class="anime-tag">${title.year || '2025'}</span>
+                            <span class="anime-tag">${title.episodes || '?'} серий</span>
+                            <span class="anime-tag">⭐ ${title.rating || '4.5'}</span>
+                        </div>
+                        <p style="color:#fff;"><strong style="color:#d000ff;">Жанры:</strong> ${title.genres?.join(', ') || 'Не указаны'}</p>
+                        <div class="anime-description" style="color:#ccc;">${title.description || 'Описание отсутствует'}</div>
+                    </div>
+                </div>
+                
+                <h2 style="color:#d000ff;">▶ Смотреть онлайн</h2>
+                <div class="player-container" id="playerContainer">
+                    ${firstEpisode.url ? `
+                        <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
+                    ` : `
+                        <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
+                            <p>Скоро появится</p>
+                        </div>
+                    `}
+                </div>
+                
+                ${episodesHtml}
+                
+                ${charactersHtml}
+                
+                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
+                <div class="comment-card" style="background:#2a002a; border-left-color:#d000ff;">
+                    <p style="color:#aaa;"><em>Функция комментариев будет доступна позже</em></p>
+                </div>
+            `;
+        }, 100);
+    }
+
+    // Функция для смены серии
+    window.playEpisode = function(url) {
+        const container = document.getElementById('playerContainer');
+        if (!url) {
+            container.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
+                    <p>Серия ещё не доступна</p>
+                </div>
+            `;
+            return;
+        }
+        container.innerHTML = `
+            <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
+        `;
+    };
+
+    document.addEventListener('DOMContentLoaded', loadTitle);
+</script>
+
+</body>
+</html>

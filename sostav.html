@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Состав - foxline Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="data.js"></script>
+</head>
+<body>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+        </a>
+        <a href="index.html" class="nav-icon-btn">
+            🏠Главная
+        </a>
+        <a href="titles.html" class="nav-icon-btn">
+            🎦Тайтлы
+        </a>
+        <a href="sostav.html" class="nav-icon-btn">
+            🎭Состав
+        </a>
+        <a href="search.html" class="nav-icon-btn">
+            🔍Поиск
+        </a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
+        <h1 class="title">Состав команды</h1>
+        <hr>
+    </div>
+    
+    <div class="welcome-banner">
+        <h2 class="h2">Наша команда</h2>
+        <p>Всего: <span id="totalCount">0</span> человек</p>
+    </div>
+
+    <div class="content-box">
+        <!-- Статистика -->
+        <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
+            <div class="stat-box">
+                <div class="stat-number" id="dubberCount">0</div>
+                <div class="stat-label">Дабберы</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="techCount">0</div>
+                <div class="stat-label">Тех. персонал</div>
+            </div>
+        </div>
+
+        <!-- Список дабберов -->
+        <h2 style="color: #001a8c; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+            🎙️ Дабберы
+        </h2>
+        <div id="dubberList" class="team-list"></div>
+
+        <hr>
+
+        <!-- Список технического персонала -->
+        <h2 style="color: #001a8c; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+            🔧 Технический персонал
+        </h2>
+        <div id="techList" class="team-list"></div>
+    </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
+</div>
+
+<script>
+    function loadVoices() {
+        if (!window.voicesDatabase) return;
+        
+        // Фильтруем по roleType
+        const dubbers = window.voicesDatabase.filter(v => 
+            v.roleType === 'dubber' || v.roleType === 'both'
+        );
+        
+        const techStaff = window.voicesDatabase.filter(v => 
+            v.roleType === 'tech' || v.roleType === 'both'
+        );
+        
+        // Обновляем счётчики
+        document.getElementById('dubberCount').innerText = dubbers.length;
+        document.getElementById('techCount').innerText = techStaff.length;
+        document.getElementById('totalCount').innerText = window.voicesDatabase.length;
+        
+        // Рендерим дабберов
+        const dubberContainer = document.getElementById('dubberList');
+        dubberContainer.innerHTML = dubbers.map(voice => `
+            <a href="voice.html?id=${voice.id}" class="team-card">
+                <img src="${voice.image}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/001a8c/ffffff'">
+                <div class="team-card-name">${voice.name}</div>
+                <div style="font-size:13px; color:#666;">${voice.status}</div>
+            </a>
+        `).join('');
+        
+        // Рендерим тех. персонал
+        const techContainer = document.getElementById('techList');
+        techContainer.innerHTML = techStaff.map(voice => `
+            <a href="voice.html?id=${voice.id}" class="team-card">
+                <img src="${voice.image}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/320063/ffffff'">
+                <div class="team-card-name">${voice.name}</div>
+                <div style="font-size:13px; color:#666;">${voice.status}</div>
+            </a>
+        `).join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadVoices);
+</script>
+</body>
+</html>
