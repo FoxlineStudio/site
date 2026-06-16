@@ -7,6 +7,136 @@
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
     <script type="module" src="firebase-config.js"></script>
+    <style>
+        .comment-item {
+            background: #2a002a;
+            border-left: 4px solid #d000ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comment-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .comment-name {
+            color: #d000ff;
+            font-weight: bold;
+        }
+        .comment-rating {
+            color: #ffaa00;
+        }
+        .comment-text {
+            color: #fff;
+            margin-top: 8px;
+        }
+        .comment-time {
+            color: #666;
+            font-size: 12px;
+        }
+        .comment-delete {
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .comment-delete:hover {
+            background: #8a0a8a;
+        }
+        .comment-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .comment-form textarea {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #6d076d;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            min-height: 80px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+        }
+        .comment-form textarea:focus {
+            border-color: #d000ff;
+            outline: none;
+            box-shadow: 0 0 20px rgba(208, 0, 255, 0.2);
+        }
+        .comment-form .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .comment-form select {
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #6d076d;
+            background: #1a001a;
+            color: #fff;
+            font-size: 16px;
+        }
+        .comment-form button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .comment-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .comment-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .no-comments {
+            color: #aaa;
+            text-align: center;
+            padding: 20px;
+        }
+        .auth-prompt {
+            background: #2a002a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #aaa;
+        }
+        .auth-prompt a {
+            color: #d000ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .auth-prompt a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
 
@@ -30,7 +160,7 @@
     </div>
     
     <div class="content-box" id="title-content">
-        <div class="loading">Загрузка...</div>
+        <div class="loading">⏳ Загрузка...</div>
     </div>
 </div>
 
@@ -49,8 +179,8 @@
     } from './firebase-config.js';
 
     const titleId = new URLSearchParams(window.location.search).get('id');
+    let currentUser = null;
 
-    // Обновляем кнопку авторизации
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
         if (user) {
@@ -62,66 +192,123 @@
         }
     }
 
-    // Загрузка комментариев
     async function loadComments() {
-        const comments = await getComments(titleId);
         const container = document.getElementById('comments-list');
         if (!container) return;
         
-        if (comments.length === 0) {
-            container.innerHTML = '<p style="color:#aaa;">Пока нет комментариев. Будьте первым!</p>';
-            return;
-        }
-        const user = getCurrentUser();
-        container.innerHTML = comments.map(c => {
-            const isOwner = user && c.uid === user.uid;
-            const avatar = c.photoURL ? `<img src="${c.photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:10px;" onerror="this.style.display='none'">` : '';
-            return `
-                <div class="comment-card" style="background:#2a002a; border-left-color:#d000ff; position:relative; padding:15px; margin-bottom:10px; border-radius:10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; align-items:center;">
-                            ${avatar}
-                            <b style="color:#d000ff;">${c.name || 'Аноним'}</b>
-                            <span style="color:#ffaa00; margin-left:10px;">${'⭐'.repeat(c.rating || 5)}</span>
+        container.innerHTML = '<div style="color:#aaa; text-align:center; padding:10px;">⏳ Загрузка комментариев...</div>';
+        
+        try {
+            const comments = await getComments(titleId);
+            
+            if (!comments || comments.length === 0) {
+                container.innerHTML = '<div class="no-comments">💬 Пока нет комментариев. Будьте первым!</div>';
+                return;
+            }
+            
+            const user = getCurrentUser();
+            container.innerHTML = comments.map(c => {
+                const isOwner = user && c.uid === user.uid;
+                const avatarHtml = c.photoURL ? 
+                    `<img src="${c.photoURL}" class="comment-avatar" onerror="this.style.display='none'">` : 
+                    `<div style="width:32px;height:32px;border-radius:50%;background:#3a0035;display:flex;align-items:center;justify-content:center;color:#d000ff;font-size:16px;">👤</div>`;
+                
+                return `
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-user">
+                                ${avatarHtml}
+                                <span class="comment-name">${c.name || 'Аноним'}</span>
+                                <span class="comment-rating">${'⭐'.repeat(c.rating || 5)}</span>
+                            </div>
+                            ${isOwner ? `<button class="comment-delete" onclick="handleDeleteComment('${c.id}')">🗑️</button>` : ''}
                         </div>
-                        ${isOwner ? `<button onclick="handleDeleteComment('${c.id}')" style="background:#6d076d; color:#fff; border:none; padding:4px 12px; border-radius:20px; cursor:pointer;">🗑️</button>` : ''}
+                        <div class="comment-text">${c.text}</div>
+                        <div class="comment-time">${c.time ? new Date(c.time.seconds * 1000).toLocaleString() : 'Только что'}</div>
                     </div>
-                    <p style="color:#fff; margin-top:8px;">${c.text}</p>
-                    <small style="color:#666;">${c.time ? new Date(c.time.seconds * 1000).toLocaleDateString() + ' ' + new Date(c.time.seconds * 1000).toLocaleTimeString() : 'Только что'}</small>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Ошибка загрузки комментариев:', error);
+            container.innerHTML = `<div class="no-comments" style="color:#ff6b6b;">❌ Ошибка загрузки комментариев</div>`;
+        }
     }
 
-    // Отправка комментария
     window.handleAddComment = async function() {
-        const text = document.getElementById('commentText').value;
-        const rating = document.getElementById('commentRating').value;
-        if (!text) {
+        const text = document.getElementById('commentText');
+        const rating = document.getElementById('commentRating');
+        const button = document.querySelector('.comment-form button');
+        
+        if (!text || !text.value.trim()) {
             alert('Введите текст комментария');
             return;
         }
-        const result = await addComment(titleId, text, parseInt(rating));
+        
+        button.disabled = true;
+        button.textContent = '⏳ Отправка...';
+        
+        const result = await addComment(titleId, text.value.trim(), parseInt(rating.value));
+        
         if (result.success) {
-            document.getElementById('commentText').value = '';
+            text.value = '';
             await loadComments();
         } else {
-            alert('Ошибка: ' + result.error);
+            alert('❌ Ошибка: ' + result.error);
         }
+        
+        button.disabled = false;
+        button.textContent = '📤 Отправить';
     };
 
-    // Удаление комментария
     window.handleDeleteComment = async function(commentId) {
         if (!confirm('Удалить комментарий?')) return;
+        
         const result = await deleteComment(commentId);
         if (result.success) {
             await loadComments();
         } else {
-            alert('Ошибка: ' + result.error);
+            alert('❌ Ошибка: ' + result.error);
         }
     };
 
-    // Основная загрузка тайтла
+    function renderCommentForm() {
+        const container = document.getElementById('comments-container');
+        if (!container) return;
+        
+        const user = getCurrentUser();
+        
+        if (user) {
+            container.innerHTML = `
+                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
+                <div class="comment-form">
+                    <textarea id="commentText" placeholder="Напишите ваш комментарий..."></textarea>
+                    <div class="form-actions">
+                        <select id="commentRating">
+                            <option value="5">⭐⭐⭐⭐⭐</option>
+                            <option value="4">⭐⭐⭐⭐</option>
+                            <option value="3">⭐⭐⭐</option>
+                            <option value="2">⭐⭐</option>
+                            <option value="1">⭐</option>
+                        </select>
+                        <button onclick="handleAddComment()">📤 Отправить</button>
+                    </div>
+                </div>
+                <div id="comments-list"></div>
+            `;
+        } else {
+            container.innerHTML = `
+                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
+                <div class="auth-prompt">
+                    <a href="login.html">Войдите</a>, чтобы оставить комментарий
+                </div>
+                <div id="comments-list"></div>
+            `;
+        }
+        
+        // Загружаем комментарии
+        loadComments();
+    }
+
     function loadTitle() {
         const content = document.getElementById('title-content');
         
@@ -133,11 +320,12 @@
                 return;
             }
 
+            // Получаем роли
             const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
             
             let charactersHtml = '';
             if (roles.length > 0) {
-                charactersHtml = '<h2 style="color:#d000ff;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
+                charactersHtml = '<h2 style="color:#d000ff; margin-top:30px;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
                 roles.forEach(role => {
                     const voice = window.voicesDatabase?.find(v => v.id === role.voiceId);
                     charactersHtml += `
@@ -151,8 +339,8 @@
                 charactersHtml += '</div>';
             }
 
+            // Список серий
             const episodes = title.episodesList || [];
-            
             let episodesHtml = '';
             if (episodes.length > 0) {
                 episodesHtml = `
@@ -169,33 +357,8 @@
                 `;
             }
 
+            // Плеер
             const firstEpisode = episodes.find(ep => ep.url) || { url: '' };
-            
-            const user = getCurrentUser();
-            let commentForm = '';
-            if (user) {
-                commentForm = `
-                    <div style="margin:20px 0; display:flex; flex-wrap:wrap; gap:10px;">
-                        <textarea id="commentText" placeholder="Ваш комментарий..." style="flex:1; padding:12px; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; min-height:80px; font-size:16px;"></textarea>
-                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <select id="commentRating" style="padding:12px; border-radius:10px; border:2px solid #6d076d; background:#1a001a; color:#fff; font-size:16px;">
-                                <option value="5">⭐⭐⭐⭐⭐</option>
-                                <option value="4">⭐⭐⭐⭐</option>
-                                <option value="3">⭐⭐⭐</option>
-                                <option value="2">⭐⭐</option>
-                                <option value="1">⭐</option>
-                            </select>
-                            <button onclick="handleAddComment()" class="search-button" style="padding:12px 25px;">Отправить</button>
-                        </div>
-                    </div>
-                `;
-            } else {
-                commentForm = `<div style="background:#2a002a; padding:20px; border-radius:10px; text-align:center; color:#aaa;">
-                    <a href="login.html" style="color:#d000ff; text-decoration:none; font-weight:bold;">Войдите</a>, чтобы оставить комментарий
-                </div>`;
-            }
-
-            // Используем ГОРИЗОНТАЛЬНУЮ обложку для страницы тайтла
             const posterImage = title.imageHorizontal || title.imageVertical || title.image;
 
             content.innerHTML = `
@@ -229,19 +392,15 @@
                 
                 ${charactersHtml}
                 
-                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
-                ${commentForm}
-                <div id="comments-list" style="margin-top:15px;">
-                    <p style="color:#aaa;">Загрузка комментариев...</p>
-                </div>
+                <div id="comments-container"></div>
             `;
 
-            // Загружаем комментарии
-            await loadComments();
+            // Рендерим форму комментариев
+            renderCommentForm();
+            
         }, 100);
     }
 
-    // Смена серии
     window.playEpisode = function(url) {
         const container = document.getElementById('playerContainer');
         if (!url) {
@@ -259,11 +418,11 @@
 
     // Подписка на изменения авторизации
     onAuthStateChangedListener((user) => {
+        currentUser = user;
         updateAuthButton(user);
-        // Обновляем форму комментариев, если пользователь изменился
-        if (document.getElementById('comments-list')) {
-            // Перезагружаем страницу, чтобы обновить форму
-            loadTitle();
+        // Обновляем форму комментариев
+        if (document.getElementById('comments-container')) {
+            renderCommentForm();
         }
     });
 
