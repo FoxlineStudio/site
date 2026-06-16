@@ -66,6 +66,8 @@
     async function loadComments() {
         const comments = await getComments(titleId);
         const container = document.getElementById('comments-list');
+        if (!container) return;
+        
         if (comments.length === 0) {
             container.innerHTML = '<p style="color:#aaa;">Пока нет комментариев. Будьте первым!</p>';
             return;
@@ -73,17 +75,19 @@
         const user = getCurrentUser();
         container.innerHTML = comments.map(c => {
             const isOwner = user && c.uid === user.uid;
+            const avatar = c.photoURL ? `<img src="${c.photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:10px;" onerror="this.style.display='none'">` : '';
             return `
-                <div class="comment-card" style="background:#2a002a; border-left-color:#d000ff; position:relative;">
+                <div class="comment-card" style="background:#2a002a; border-left-color:#d000ff; position:relative; padding:15px; margin-bottom:10px; border-radius:10px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div>
+                        <div style="display:flex; align-items:center;">
+                            ${avatar}
                             <b style="color:#d000ff;">${c.name || 'Аноним'}</b>
-                            <span style="color:#ffaa00;">${'⭐'.repeat(c.rating || 5)}</span>
+                            <span style="color:#ffaa00; margin-left:10px;">${'⭐'.repeat(c.rating || 5)}</span>
                         </div>
                         ${isOwner ? `<button onclick="handleDeleteComment('${c.id}')" style="background:#6d076d; color:#fff; border:none; padding:4px 12px; border-radius:20px; cursor:pointer;">🗑️</button>` : ''}
                     </div>
                     <p style="color:#fff; margin-top:8px;">${c.text}</p>
-                    <small style="color:#666;">${c.time ? new Date(c.time.seconds * 1000).toLocaleDateString() : 'Только что'}</small>
+                    <small style="color:#666;">${c.time ? new Date(c.time.seconds * 1000).toLocaleDateString() + ' ' + new Date(c.time.seconds * 1000).toLocaleTimeString() : 'Только что'}</small>
                 </div>
             `;
         }).join('');
@@ -172,9 +176,9 @@
             if (user) {
                 commentForm = `
                     <div style="margin:20px 0; display:flex; flex-wrap:wrap; gap:10px;">
-                        <textarea id="commentText" placeholder="Ваш комментарий..." style="flex:1; padding:12px; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; min-height:80px;"></textarea>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <select id="commentRating" style="padding:12px; border-radius:10px; border:2px solid #6d076d; background:#1a001a; color:#fff;">
+                        <textarea id="commentText" placeholder="Ваш комментарий..." style="flex:1; padding:12px; border-radius:10px; border:2px solid #6d076d; background:rgba(58,0,53,0.2); color:#fff; min-height:80px; font-size:16px;"></textarea>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <select id="commentRating" style="padding:12px; border-radius:10px; border:2px solid #6d076d; background:#1a001a; color:#fff; font-size:16px;">
                                 <option value="5">⭐⭐⭐⭐⭐</option>
                                 <option value="4">⭐⭐⭐⭐</option>
                                 <option value="3">⭐⭐⭐</option>
@@ -187,13 +191,16 @@
                 `;
             } else {
                 commentForm = `<div style="background:#2a002a; padding:20px; border-radius:10px; text-align:center; color:#aaa;">
-                    <a href="login.html" style="color:#d000ff;">Войдите</a>, чтобы оставить комментарий
+                    <a href="login.html" style="color:#d000ff; text-decoration:none; font-weight:bold;">Войдите</a>, чтобы оставить комментарий
                 </div>`;
             }
 
+            // Используем ГОРИЗОНТАЛЬНУЮ обложку для страницы тайтла
+            const posterImage = title.imageHorizontal || title.imageVertical || title.image;
+
             content.innerHTML = `
                 <div class="anime-header">
-                    <img src="${title.imageHorizontal || title.imageVertical}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
+                    <img src="${posterImage}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
                     <div class="anime-info">
                         <h1 class="anime-title" style="color:#d000ff;">${title.name}</h1>
                         <div class="anime-meta">
@@ -253,8 +260,10 @@
     // Подписка на изменения авторизации
     onAuthStateChangedListener((user) => {
         updateAuthButton(user);
-        if (user && document.getElementById('comments-list')) {
-            loadComments();
+        // Обновляем форму комментариев, если пользователь изменился
+        if (document.getElementById('comments-list')) {
+            // Перезагружаем страницу, чтобы обновить форму
+            loadTitle();
         }
     });
 
