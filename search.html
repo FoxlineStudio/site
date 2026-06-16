@@ -6,80 +6,283 @@
     <title>Поиск - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <style>
+        /* Стили специально для страницы поиска */
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #6d076d;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            transition: all 0.3s;
+        }
+        
+        .search-input::placeholder {
+            color: #888;
+        }
+        
+        .search-input:focus {
+            border-color: #d000ff;
+            box-shadow: 0 0 20px rgba(208, 0, 255, 0.2);
+            background: rgba(58, 0, 53, 0.3);
+        }
+        
+        .search-input:focus::placeholder {
+            color: #aaa;
+        }
+        
+        .search-button {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+            background: linear-gradient(135deg, #8a0a8a, #4a0045);
+        }
+        
+        .search-results-title {
+            color: #d000ff;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .search-stats {
+            color: #aaa;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .search-section-title {
+            color: #d000ff;
+            font-size: 20px;
+            margin: 25px 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3a0035;
+        }
+        
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 18px;
+            background: rgba(58, 0, 53, 0.2);
+            margin-bottom: 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .result-item:hover {
+            background: rgba(58, 0, 53, 0.4);
+            border-color: #6d076d;
+            transform: translateX(5px);
+            box-shadow: 0 5px 20px rgba(208, 0, 255, 0.1);
+        }
+        
+        .result-image {
+            width: 55px;
+            height: 55px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #3a0035;
+            flex-shrink: 0;
+        }
+        
+        .result-image-voice {
+            border-radius: 50%;
+            border: 2px solid #6d076d;
+        }
+        
+        .result-info {
+            flex: 1;
+        }
+        
+        .result-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d000ff;
+            margin-bottom: 3px;
+        }
+        
+        .result-type {
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        .result-type-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        
+        .badge-title {
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+        }
+        
+        .badge-voice {
+            background: linear-gradient(135deg, #3a0035, #1a001a);
+            color: #d000ff;
+            border: 1px solid #6d076d;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 50px 20px;
+            color: #888;
+            font-size: 18px;
+        }
+        
+        .no-results-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .loading-text {
+            color: #aaa;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .search-form {
+            display: flex;
+            width: 100%;
+            max-width: 500px;
+            gap: 10px;
+        }
+    </style>
 </head>
 <body>
 
 <header class="fixed-header">
     <div class="nav-buttons">
-    <a href="index.html">
-        <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
-    </a>
-        <a href="index.html" class="nav-icon-btn">
-            🏠Главная
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
         </a>
-        <a href="titles.html" class="nav-icon-btn">
-            🎦Тайтлы
-        </a>
-        <a href="sostav.html" class="nav-icon-btn">
-            🎭Состав
-        </a>
-        <a href="search.html" class="nav-icon-btn">
-            🔍Поиск
-        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
     </div>
 </header>
 
 <div class="container">
     <div class="header">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
         <hr>
     </div>
     
     <div class="content-box">
         <div style="display: flex; justify-content: center; margin-bottom: 30px;">
-            <form action="search.html" method="get" style="display: flex; width: 100%; max-width: 500px; gap: 10px;">
+            <form action="search.html" method="get" class="search-form">
                 <input type="text" name="q" placeholder="🔍 Поиск по тайтлам и дабберам..." 
-                       style="flex: 1; padding: 12px 20px; border: 2px solid #001a8c; border-radius: 50px; font-size: 16px; outline: none;" id="searchInput">
-                <button type="submit" class="nav-button" style="padding: 12px 25px;">Найти</button>
+                       class="search-input" id="searchInput">
+                <button type="submit" class="search-button">Найти</button>
             </form>
         </div>
-        <div id="search-results" class="loading">Введите поисковый запрос</div>
+        <div id="search-results">
+            <div class="loading-text">🔍 Введите поисковый запрос</div>
+        </div>
     </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
 </div>
 
 <script>
     const query = new URLSearchParams(window.location.search).get('q');
+    
     function performSearch() {
         const container = document.getElementById('search-results');
+        
         if (!query || query.trim() === '') {
-            container.innerHTML = '<div class="loading">🔍 Введите поисковый запрос</div>';
+            container.innerHTML = '<div class="loading-text">🔍 Введите поисковый запрос</div>';
             return;
         }
+        
         const results = window.searchDatabase?.(query) || { titles: [], voices: [] };
-        let html = `<h2>Результаты по запросу: "${query}"</h2><p>Найдено: ${results.titles.length + results.voices.length}</p><hr>`;
+        const total = results.titles.length + results.voices.length;
+        
+        let html = `
+            <div class="search-results-title">Результаты поиска</div>
+            <div class="search-stats">По запросу: <strong style="color:#d000ff;">"${query}"</strong> — найдено <strong style="color:#d000ff;">${total}</strong> результатов</div>
+            <hr style="border-color:#3a0035;">
+        `;
+        
         if (results.titles.length > 0) {
-            html += '<h3>🎬 Тайтлы</h3>';
+            html += `<div class="search-section-title">🎬 Тайтлы (${results.titles.length})</div>`;
             results.titles.forEach(t => {
-                html += `<a href="title.html?id=${t.id}" style="display:flex; align-items:center; gap:15px; padding:10px; background:white; margin-bottom:8px; border-radius:10px; text-decoration:none; color:inherit;">
-                            <img src="${t.image}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;" onerror="this.src='https://via.placeholder.com/50'">
-                            <div><strong>${t.name}</strong><br><small>${t.type}</small></div>
-                         </a>`;
+                html += `
+                    <a href="title.html?id=${t.id}" class="result-item">
+                        <img src="${t.image}" class="result-image" onerror="this.src='https://via.placeholder.com/55/3a0035/d000ff?text=?'">
+                        <div class="result-info">
+                            <div class="result-name">${t.name}</div>
+                            <div class="result-type">
+                                ${t.type || 'Аниме'} • ${t.episodes || '?'} серий
+                                <span class="result-type-badge badge-title">⭐ ${t.rating || '4.5'}</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
             });
         }
+        
         if (results.voices.length > 0) {
-            html += '<h3>🎭 Дабберы</h3>';
+            html += `<div class="search-section-title">🎭 Дабберы (${results.voices.length})</div>`;
             results.voices.forEach(v => {
-                html += `<a href="voice.html?id=${v.id}" style="display:flex; align-items:center; gap:15px; padding:10px; background:white; margin-bottom:8px; border-radius:10px; text-decoration:none; color:inherit;">
-                            <img src="${v.image}" style="width:50px; height:50px; object-fit:cover; border-radius:50%;" onerror="this.src='https://via.placeholder.com/50'">
-                            <div><strong>${v.name}</strong><br><small>${v.status}</small></div>
-                         </a>`;
+                html += `
+                    <a href="voice.html?id=${v.id}" class="result-item">
+                        <img src="${v.image}" class="result-image result-image-voice" onerror="this.src='https://via.placeholder.com/55/3a0035/d000ff?text=?'">
+                        <div class="result-info">
+                            <div class="result-name">${v.name}</div>
+                            <div class="result-type">
+                                ${v.status || 'Даббер'}
+                                <span class="result-type-badge badge-voice">${v.roleType === 'tech' ? '🔧 Тех. персонал' : v.roleType === 'both' ? '🎙️+🔧' : '🎙️ Даббер'}</span>
+                            </div>
+                        </div>
+                    </a>
+                `;
             });
         }
-        if (results.titles.length === 0 && results.voices.length === 0) html += '<p>😕 Ничего не найдено</p>';
+        
+        if (results.titles.length === 0 && results.voices.length === 0) {
+            html += `
+                <div class="no-results">
+                    <span class="no-results-icon">😕</span>
+                    Ничего не найдено по запросу "<strong style="color:#d000ff;">${query}</strong>"
+                    <br><small style="color:#666;">Попробуйте изменить запрос или проверить орфографию</small>
+                </div>
+            `;
+        }
+        
         container.innerHTML = html;
     }
+    
     document.addEventListener('DOMContentLoaded', performSearch);
-    if (query) document.getElementById('searchInput') && (document.getElementById('searchInput').value = query);
+    if (query) {
+        const input = document.getElementById('searchInput');
+        if (input) input.value = query;
+    }
 </script>
 </body>
 </html>
