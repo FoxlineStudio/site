@@ -191,6 +191,9 @@ const voicesDatabase = [
     { 
         id: 'nemo',
         name: 'Nemo',
+        status: 'Удалён из команды',
+        joinDate: '-',
+        image: 'images/deleted.jpg',
     }
 ];
 
