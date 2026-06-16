@@ -153,7 +153,7 @@ const voicesDatabase = [
         status: 'Даббер',
         joinDate: '2025',
         bio: 'Даббер',
-        social: {}
+        social: { telegram:'katsyrii' }
     },
     { 
         id: 'anonym8',
