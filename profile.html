@@ -6,6 +6,117 @@
     <title>Профиль - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
     <script type="module" src="firebase-config.js"></script>
+    <style>
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #d000ff;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        .profile-field {
+            max-width: 400px;
+            margin: 15px auto;
+            text-align: left;
+        }
+        .profile-field label {
+            color: #aaa;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .profile-field input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 2px solid #6d076d;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .profile-field input:focus {
+            border-color: #d000ff;
+            outline: none;
+            box-shadow: 0 0 20px rgba(208, 0, 255, 0.2);
+        }
+        .profile-field input::placeholder {
+            color: #666;
+        }
+        .save-btn {
+            padding: 14px 40px;
+            font-size: 18px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+            background: linear-gradient(135deg, #8a0a8a, #4a0045);
+        }
+        .save-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success-msg {
+            background: #1a3a1a;
+            color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px auto;
+            max-width: 400px;
+            display: none;
+        }
+        .error-msg {
+            background: #3a0035;
+            color: #ff6b6b;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px auto;
+            max-width: 400px;
+            display: none;
+        }
+        .profile-info {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .logout-btn {
+            padding: 14px 40px;
+            font-size: 18px;
+            margin-top: 20px;
+            background: #3a0035;
+            color: #ff6b6b;
+            border: 2px solid #6d076d;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background: #4a0045;
+            border-color: #ff6b6b;
+            transform: translateY(-2px);
+        }
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #6d076d;
+            margin: 10px auto;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
@@ -36,50 +147,222 @@
 </div>
 
 <script type="module">
-    import { getCurrentUser, logoutUser, onAuthStateChangedListener } from './firebase-config.js';
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener,
+        getUserData,
+        updateUserProfile,
+        logoutUser
+    } from './firebase-config.js';
 
-    function updateProfile() {
-        const user = getCurrentUser();
-        const container = document.getElementById('profileContent');
-        const authBtn = document.getElementById('authBtn');
+    let currentUserData = null;
+    let currentUid = null;
 
+    // Обновление кнопки авторизации в хедере
+    function updateAuthButton(user) {
+        const btn = document.getElementById('authBtn');
         if (user) {
-            authBtn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
-            authBtn.href = 'profile.html';
-            
-            container.innerHTML = `
-                <h2 class="title">👤 ${user.displayName || 'Пользователь'}</h2>
-                <p style="color:#aaa;">Email: ${user.email}</p>
-                <p style="color:#aaa;">UID: ${user.uid}</p>
-                <br>
-                <button onclick="handleLogout()" class="search-button" style="padding:14px 40px; font-size:18px;">🚪 Выйти</button>
-                <br><br>
-                <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
-            `;
+            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            btn.href = 'profile.html';
         } else {
-            authBtn.textContent = '🔑 Вход';
-            authBtn.href = 'login.html';
-            container.innerHTML = `
-                <h2 class="title">🔒 Вы не авторизованы</h2>
-                <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
-                <br>
-                <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none;">🔑 Войти</a>
-            `;
+            btn.textContent = '🔑 Вход';
+            btn.href = 'login.html';
         }
     }
 
+    // Показать сообщение
+    function showMessage(type, text) {
+        const successEl = document.getElementById('successMsg');
+        const errorEl = document.getElementById('errorMsg');
+        if (type === 'success') {
+            successEl.textContent = '✅ ' + text;
+            successEl.style.display = 'block';
+            errorEl.style.display = 'none';
+        } else {
+            errorEl.textContent = '❌ ' + text;
+            errorEl.style.display = 'block';
+            successEl.style.display = 'none';
+        }
+        setTimeout(() => {
+            successEl.style.display = 'none';
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+
+    // Сохранение профиля
+    window.saveProfile = async function() {
+        const nameInput = document.getElementById('profileName');
+        const avatarInput = document.getElementById('profileAvatar');
+        const saveBtn = document.getElementById('saveBtn');
+        
+        const newName = nameInput.value.trim();
+        const newAvatar = avatarInput.value.trim();
+        
+        if (!newName) {
+            showMessage('error', 'Имя не может быть пустым');
+            return;
+        }
+        
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ Сохранение...';
+        
+        const updateData = {};
+        if (newName !== currentUserData.displayName) {
+            updateData.displayName = newName;
+        }
+        if (newAvatar !== currentUserData.photoURL) {
+            updateData.photoURL = newAvatar;
+        }
+        
+        if (Object.keys(updateData).length === 0) {
+            showMessage('success', 'Изменений не было');
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Сохранить';
+            return;
+        }
+        
+        const result = await updateUserProfile(currentUid, updateData);
+        if (result.success) {
+            showMessage('success', 'Профиль обновлён!');
+            // Обновляем данные
+            const newData = await getUserData(currentUid);
+            if (newData.success) {
+                currentUserData = newData.data;
+                renderProfile(currentUserData);
+            }
+        } else {
+            showMessage('error', result.error);
+        }
+        
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Сохранить';
+    };
+
+    // Выход
     window.handleLogout = async function() {
         if (!confirm('Вы уверены, что хотите выйти?')) return;
         const result = await logoutUser();
         if (result.success) {
             window.location.href = 'index.html';
         } else {
-            alert('Ошибка: ' + result.error);
+            showMessage('error', result.error);
         }
     };
 
-    onAuthStateChangedListener(updateProfile);
-    updateProfile();
+    // Рендер профиля
+    function renderProfile(data) {
+        const container = document.getElementById('profileContent');
+        const avatarUrl = data.photoURL || '';
+        const displayName = data.displayName || 'Пользователь';
+        
+        container.innerHTML = `
+            <h2 class="title">👤 Профиль</h2>
+            
+            ${avatarUrl ? `<img src="${avatarUrl}" class="profile-avatar" onerror="this.src='https://via.placeholder.com/150/3a0035/d000ff?text=?'">` : `<div class="profile-avatar" style="background:linear-gradient(135deg,#3a0035,#1a001a);display:flex;align-items:center;justify-content:center;font-size:48px;color:#d000ff;">👤</div>`}
+            
+            <div id="successMsg" class="success-msg"></div>
+            <div id="errorMsg" class="error-msg"></div>
+            
+            <div class="profile-field">
+                <label>👤 Имя</label>
+                <input type="text" id="profileName" value="${displayName}" placeholder="Ваше имя">
+            </div>
+            
+            <div class="profile-field">
+                <label>🖼️ Ссылка на аватарку</label>
+                <input type="text" id="profileAvatar" value="${avatarUrl}" placeholder="https://example.com/avatar.jpg">
+                ${avatarUrl ? `<img src="${avatarUrl}" class="avatar-preview" onerror="this.style.display='none'">` : ''}
+                <small style="color:#666;display:block;margin-top:5px;">Вставьте прямую ссылку на изображение (PNG, JPG, WEBP)</small>
+            </div>
+            
+            <button class="save-btn" id="saveBtn" onclick="saveProfile()">💾 Сохранить</button>
+            
+            <div class="profile-info">
+                <p>📧 Email: ${data.email || 'Не указан'}</p>
+                <p>📅 Дата регистрации: ${data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'Неизвестно'}</p>
+            </div>
+            
+            <br>
+            <button class="logout-btn" onclick="handleLogout()">🚪 Выйти</button>
+            <br><br>
+            <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
+        `;
+        
+        // Превью аватарки при вводе
+        const avatarInput = document.getElementById('profileAvatar');
+        if (avatarInput) {
+            avatarInput.addEventListener('input', function() {
+                const preview = document.querySelector('.avatar-preview');
+                if (this.value) {
+                    if (!preview) {
+                        const newPreview = document.createElement('img');
+                        newPreview.className = 'avatar-preview';
+                        this.parentNode.appendChild(newPreview);
+                    }
+                    const img = document.querySelector('.avatar-preview');
+                    if (img) {
+                        img.src = this.value;
+                        img.onerror = function() { this.style.display = 'none'; };
+                        img.style.display = 'block';
+                    }
+                } else {
+                    const img = document.querySelector('.avatar-preview');
+                    if (img) img.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // Загрузка профиля
+    async function loadProfile() {
+        const container = document.getElementById('profileContent');
+        const user = getCurrentUser();
+        
+        if (!user) {
+            updateAuthButton(null);
+            container.innerHTML = `
+                <h2 class="title">🔒 Вы не авторизованы</h2>
+                <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
+                <br>
+                <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none; display:inline-block;">🔑 Войти</a>
+            `;
+            return;
+        }
+        
+        updateAuthButton(user);
+        currentUid = user.uid;
+        
+        const result = await getUserData(user.uid);
+        if (result.success) {
+            currentUserData = result.data;
+            renderProfile(currentUserData);
+        } else {
+            container.innerHTML = `
+                <h2 class="title">❌ Ошибка загрузки</h2>
+                <p style="color:#ff6b6b;">${result.error}</p>
+                <br>
+                <a href="index.html" class="nav-icon-btn" style="display:inline-block;">🏠 На главную</a>
+            `;
+        }
+    }
+
+    // Следим за состоянием авторизации
+    onAuthStateChangedListener((user) => {
+        updateAuthButton(user);
+        if (!user) {
+            const container = document.getElementById('profileContent');
+            if (container) {
+                container.innerHTML = `
+                    <h2 class="title">🔒 Вы не авторизованы</h2>
+                    <p style="color:#aaa;">Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
+                    <br>
+                    <a href="login.html" class="search-button" style="padding:14px 40px; font-size:18px; text-decoration:none; display:inline-block;">🔑 Войти</a>
+                `;
+            }
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadProfile);
 </script>
 
 </body>
