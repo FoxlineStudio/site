@@ -359,7 +359,7 @@
 
             // Плеер
             const firstEpisode = episodes.find(ep => ep.url) || { url: '' };
-            const posterImage = title.imageHorizontal || title.imageVertical || title.image;
+            const posterImage = title.imageVertical || title.imageVertical || title.image;
 
             content.innerHTML = `
                 <div class="anime-header">
