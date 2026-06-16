@@ -116,6 +116,15 @@ body {
     margin-bottom: 10px;
 }
 
+.bald-comment {
+    font-size: 35px;
+    background: linear-gradient(135deg, #d000ff, #2b0035);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 10px;
+}
+
 .text, p {
     font-size: 18px;
     color: #ffffff;
