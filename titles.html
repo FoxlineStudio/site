@@ -73,6 +73,58 @@
             color: #d000ff;
             font-weight: bold;
         }
+        .episode-input {
+    width: 60px;
+    padding: 6px 10px;
+    border-radius: 25px;
+    border: 2px solid #3a0035;
+    background: rgba(58, 0, 53, 0.3);
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    /* Убираем стрелки вверх/вниз (стандарт) */
+    appearance: textfield;
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+}
+        .episode-input:focus {
+            border-color: #d000ff;
+            box-shadow: 0 0 15px rgba(208, 0, 255, 0.2);
+        }
+        .episode-input::placeholder {
+            color: #666;
+        }
+        .episode-input::-webkit-outer-spin-button,
+.episode-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.episode-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+        .episode-range-label {
+            color: #666;
+            font-size: 13px;
+        }
+        .reset-episodes-btn {
+            padding: 6px 14px;
+            border-radius: 25px;
+            border: 2px solid #3a0035;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        .reset-episodes-btn:hover {
+            border-color: #6d076d;
+            color: #fff;
+        }
         @media (max-width: 768px) {
             .filters-container {
                 flex-direction: column;
@@ -88,6 +140,23 @@
             }
             .filter-divider {
                 display: none;
+            }
+            .episode-input {
+                width: 50px;
+            }
+        }
+        @media (max-width: 480px) {
+            .filters-container {
+                padding: 12px;
+            }
+            .filter-btn {
+                padding: 5px 12px;
+                font-size: 12px;
+            }
+            .episode-input {
+                width: 45px;
+                padding: 5px 8px;
+                font-size: 12px;
             }
         }
     </style>
@@ -129,10 +198,11 @@
             
             <div class="filter-group">
                 <span class="filter-label">📊 Серий:</span>
-                <button class="filter-btn active" data-filter="episodes" data-value="all">Все</button>
-                <button class="filter-btn" data-filter="episodes" data-value="1">1</button>
-                <button class="filter-btn" data-filter="episodes" data-value="8">8</button>
-                <button class="filter-btn" data-filter="episodes" data-value="12">12+</button>
+                <span class="episode-range-label">от</span>
+                <input type="number" class="episode-input" id="episodeFrom" placeholder="0" min="0">
+                <span class="episode-range-label">до</span>
+                <input type="number" class="episode-input" id="episodeTo" placeholder="∞" min="0">
+                <button class="reset-episodes-btn" id="resetEpisodes">✕ Сбросить</button>
             </div>
             
             <div class="titles-count">
@@ -156,7 +226,8 @@
     import { getCurrentUser, onAuthStateChangedListener } from './firebase-config.js';
 
     let currentFilterType = 'all';
-    let currentFilterEpisodes = 'all';
+    let currentEpisodeFrom = 0;
+    let currentEpisodeTo = Infinity;
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -177,15 +248,11 @@
             titles = titles.filter(t => t.type === currentFilterType);
         }
         
-        // Фильтр по количеству серий
-        if (currentFilterEpisodes !== 'all') {
-            const num = parseInt(currentFilterEpisodes);
-            if (currentFilterEpisodes === '12') {
-                titles = titles.filter(t => t.episodes >= 12);
-            } else {
-                titles = titles.filter(t => t.episodes === num);
-            }
-        }
+        // Фильтр по диапазону серий
+        titles = titles.filter(t => {
+            const eps = t.episodes || 0;
+            return eps >= currentEpisodeFrom && eps <= currentEpisodeTo;
+        });
         
         return titles;
     }
@@ -201,7 +268,7 @@
                 <div style="text-align:center; padding:40px; color:#666; width:100%;">
                     <p style="font-size:24px;">😕</p>
                     <p>По выбранным фильтрам ничего не найдено</p>
-                    <button onclick="resetFilters()" style="margin-top:15px; padding:10px 25px; background:linear-gradient(135deg,#6d076d,#3a0035); color:#fff; border:none; border-radius:25px; cursor:pointer;">Сбросить фильтры</button>
+                    <button onclick="resetAllFilters()" style="margin-top:15px; padding:10px 25px; background:linear-gradient(135deg,#6d076d,#3a0035); color:#fff; border:none; border-radius:25px; cursor:pointer;">Сбросить фильтры</button>
                 </div>
             `;
             countEl.textContent = '0';
@@ -231,9 +298,10 @@
         }).join('');
     }
 
-    window.resetFilters = function() {
+    window.resetAllFilters = function() {
         currentFilterType = 'all';
-        currentFilterEpisodes = 'all';
+        currentEpisodeFrom = 0;
+        currentEpisodeTo = Infinity;
         
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
@@ -241,34 +309,65 @@
         document.querySelectorAll('.filter-btn[data-filter="type"][data-value="all"]').forEach(btn => {
             btn.classList.add('active');
         });
-        document.querySelectorAll('.filter-btn[data-filter="episodes"][data-value="all"]').forEach(btn => {
-            btn.classList.add('active');
-        });
+        
+        document.getElementById('episodeFrom').value = '';
+        document.getElementById('episodeTo').value = '';
         
         renderTitles();
     };
 
     function setupFilters() {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        // Фильтр по типу
+        document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(btn => {
             btn.addEventListener('click', function() {
-                const filterType = this.dataset.filter;
                 const value = this.dataset.value;
                 
-                // Убираем активный класс у всех кнопок этой группы
-                document.querySelectorAll(`.filter-btn[data-filter="${filterType}"]`).forEach(b => {
+                document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(b => {
                     b.classList.remove('active');
                 });
                 this.classList.add('active');
                 
-                // Обновляем фильтры
-                if (filterType === 'type') {
-                    currentFilterType = value;
-                } else if (filterType === 'episodes') {
-                    currentFilterEpisodes = value;
-                }
-                
+                currentFilterType = value;
                 renderTitles();
             });
+        });
+
+        // Фильтр по диапазону серий
+        const episodeFrom = document.getElementById('episodeFrom');
+        const episodeTo = document.getElementById('episodeTo');
+        
+        const updateEpisodeFilter = function() {
+            const from = parseInt(episodeFrom.value);
+            const to = parseInt(episodeTo.value);
+            
+            currentEpisodeFrom = isNaN(from) ? 0 : from;
+            currentEpisodeTo = isNaN(to) ? Infinity : to;
+            
+            renderTitles();
+        };
+        
+        episodeFrom.addEventListener('input', updateEpisodeFilter);
+        episodeTo.addEventListener('input', updateEpisodeFilter);
+        
+        // Сброс диапазона
+        document.getElementById('resetEpisodes').addEventListener('click', function() {
+            episodeFrom.value = '';
+            episodeTo.value = '';
+            currentEpisodeFrom = 0;
+            currentEpisodeTo = Infinity;
+            renderTitles();
+        });
+
+        // Обработка Enter в полях ввода
+        episodeFrom.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                episodeTo.focus();
+            }
+        });
+        episodeTo.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                renderTitles();
+            }
         });
     }
 
