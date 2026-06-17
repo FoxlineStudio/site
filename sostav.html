@@ -14,20 +14,58 @@
         <a href="index.html">
             <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
         </a>
-        <a href="index.html" class="nav-icon-btn">
-            🏠Главная
-        </a>
-        <a href="titles.html" class="nav-icon-btn">
-            🎦Тайтлы
-        </a>
-        <a href="sostav.html" class="nav-icon-btn">
-            🎭Состав
-        </a>
-        <a href="search.html" class="nav-icon-btn">
-            🔍Поиск
-        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <!-- DUB-in будет показываться только для дабберов и админов -->
+        <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+        <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
+
+<script type="module">
+    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
+
+    function updateAuthButton(user) {
+        const btn = document.getElementById('authBtn');
+        if (user) {
+            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            btn.href = 'profile.html';
+        } else {
+            btn.textContent = '🔑 Вход';
+            btn.href = 'login.html';
+        }
+    }
+
+    async function updateDubInLink(user) {
+        const link = document.getElementById('dubInLink');
+        if (!link) return;
+        
+        if (user) {
+            const role = await getUserRole(user.uid);
+            if (role === 'dubber' || role === 'admin') {
+                link.style.display = 'inline-flex';
+            } else {
+                link.style.display = 'none';
+            }
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
+    onAuthStateChangedListener(async (user) => {
+        updateAuthButton(user);
+        await updateDubInLink(user);
+    });
+
+    // При загрузке страницы
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        updateAuthButton(user);
+        await updateDubInLink(user);
+    });
+</script>
 
 <div class="container">
     <div class="header">

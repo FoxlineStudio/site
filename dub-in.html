@@ -52,7 +52,6 @@
             color: #aaa;
         }
 
-        /* Модальное окно */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -194,21 +193,25 @@
             padding: 40px;
             color: #666;
         }
-        .admin-only {
-            color: #d000ff;
-            font-size: 12px;
-            margin-top: 5px;
-            display: block;
-        }
-        .auth-prompt {
+        .access-denied {
             text-align: center;
-            padding: 40px;
-            color: #aaa;
+            padding: 60px 20px;
         }
-        .auth-prompt a {
+        .access-denied h2 {
+            color: #ff6b6b;
+            font-size: 28px;
+        }
+        .access-denied p {
+            color: #aaa;
+            margin: 20px 0;
+        }
+        .access-denied a {
             color: #d000ff;
             text-decoration: none;
             font-weight: bold;
+        }
+        .access-denied a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -222,7 +225,7 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <a href="dub-in.html" class="nav-icon-btn">🎙️DUB-in</a>
+        <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
@@ -238,7 +241,7 @@
     
     <div class="content-box">
         <div id="dubContent">
-            <div class="loading-spinner">⏳ Загрузка...</div>
+            <div class="loading-spinner">⏳ Проверка доступа...</div>
         </div>
     </div>
 </div>
@@ -261,9 +264,7 @@
         getDubMaterials,
         addDubMaterial,
         removeDubMaterial,
-        isAdmin,
-        isDubber,
-        getUserData
+        getUserRole
     } from './firebase-config.js';
 
     let currentUser = null;
@@ -281,7 +282,18 @@
         }
     }
 
-    // Открыть модальное окно с материалами
+    async function updateDubInLink(user) {
+        const link = document.getElementById('dubInLink');
+        if (!link) return;
+        
+        if (user) {
+            const role = await getUserRole(user.uid);
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
     window.openModal = function(titleId, titleName) {
         currentTitleId = titleId;
         const overlay = document.getElementById('modalOverlay');
@@ -300,14 +312,12 @@
         currentTitleId = null;
     };
 
-    // Закрытие по клику на оверлей
     document.getElementById('modalOverlay').addEventListener('click', function(e) {
         if (e.target === this) {
             closeModal();
         }
     });
 
-    // Загрузка материалов
     async function loadMaterials(titleId, titleName) {
         const body = document.getElementById('modalBody');
         const isAdminUser = currentUserRole === 'admin';
@@ -421,7 +431,6 @@
         body.innerHTML = html;
     }
 
-    // Добавление материала
     window.addMaterial = async function(titleId, type) {
         const inputId = type + 'Input';
         const input = document.getElementById(inputId);
@@ -442,7 +451,6 @@
         }
     };
 
-    // Удаление материала
     window.deleteMaterial = async function(titleId, type, index) {
         if (!confirm('Удалить этот материал?')) return;
         const result = await removeDubMaterial(titleId, type, index);
@@ -454,7 +462,6 @@
         }
     };
 
-    // Загрузка списка тайтлов
     async function loadTitles() {
         const container = document.getElementById('dubContent');
         
@@ -487,32 +494,62 @@
         `;
     }
 
-    // Загрузка роли пользователя
-    async function loadUserRole() {
+    async function checkAccess() {
+        const container = document.getElementById('dubContent');
         const user = getCurrentUser();
-        if (user) {
-            const result = await getUserData(user.uid);
-            if (result.success) {
-                currentUserRole = result.data.role || 'user';
-            }
+        
+        if (!user) {
+            container.innerHTML = `
+                <div class="access-denied">
+                    <h2>🔒 Доступ запрещён</h2>
+                    <p>Только <strong style="color:#d000ff;">дабберы</strong> и <strong style="color:#d000ff;">администраторы</strong> имеют доступ к этой странице.</p>
+                    <p><a href="login.html">Войдите</a> в аккаунт или обратитесь к администратору.</p>
+                    <br>
+                    <a href="index.html" style="color:#6d076d; text-decoration:none;">🏠 На главную</a>
+                </div>
+            `;
+            return false;
+        }
+        
+        const role = await getUserRole(user.uid);
+        currentUserRole = role;
+        
+        if (role !== 'dubber' && role !== 'admin') {
+            container.innerHTML = `
+                <div class="access-denied">
+                    <h2>🚫 Недостаточно прав</h2>
+                    <p>Ваша роль: <strong style="color:#ffaa00;">${role}</strong></p>
+                    <p>Для доступа к этой странице нужна роль <strong style="color:#d000ff;">Даббер</strong> или <strong style="color:#d000ff;">Администратор</strong>.</p>
+                    <p>Обратитесь к администратору для изменения роли.</p>
+                    <br>
+                    <a href="index.html" style="color:#6d076d; text-decoration:none;">🏠 На главную</a>
+                </div>
+            `;
+            return false;
+        }
+        
+        return true;
+    }
+
+    async function initPage() {
+        const user = getCurrentUser();
+        updateAuthButton(user);
+        await updateDubInLink(user);
+        
+        const hasAccess = await checkAccess();
+        if (hasAccess) {
+            await loadTitles();
         }
     }
 
     onAuthStateChangedListener(async (user) => {
         currentUser = user;
         updateAuthButton(user);
-        if (user) {
-            await loadUserRole();
-        } else {
-            currentUserRole = 'user';
-        }
+        await updateDubInLink(user);
+        await initPage();
     });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        await loadUserRole();
-        await loadTitles();
-        updateAuthButton(getCurrentUser());
-    });
+    document.addEventListener('DOMContentLoaded', initPage);
 </script>
 
 </body>
