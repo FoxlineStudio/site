@@ -139,12 +139,6 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
         }
-        .admin-toolbar .admin-btn.danger {
-            background: #6d0000;
-        }
-        .admin-toolbar .admin-btn.danger:hover {
-            background: #8a0000;
-        }
 
         .title-card-wrapper {
             position: relative;
@@ -295,6 +289,105 @@
             transform: none;
         }
 
+        /* ===== ИНТЕРАКТИВНЫЙ СПИСОК СЕРИЙ ===== */
+        .episodes-editor {
+            margin-top: 10px;
+        }
+        .episode-edit-item {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(58, 0, 53, 0.2);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid #3a0035;
+        }
+        .episode-edit-item:hover {
+            border-color: #6d076d;
+        }
+        .episode-edit-item .ep-number {
+            width: 50px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+            text-align: center;
+        }
+        .episode-edit-item .ep-title {
+            flex: 2;
+            min-width: 120px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .episode-edit-item .ep-url {
+            flex: 3;
+            min-width: 150px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .episode-edit-item .ep-status {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        .episode-edit-item .ep-status option {
+            background: #1a001a;
+        }
+        .episode-edit-item .remove-ep-btn {
+            background: #6d0000;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .episode-edit-item .remove-ep-btn:hover {
+            background: #8a0000;
+        }
+
+        .add-episode-btn {
+            padding: 8px 20px;
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .add-episode-btn:hover {
+            background: #8a0a8a;
+            transform: translateY(-2px);
+        }
+
+        .episodes-empty {
+            color: #666;
+            text-align: center;
+            padding: 15px;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .filters-container {
                 flex-direction: column;
@@ -319,6 +412,18 @@
             }
             .title-card-wrapper .admin-actions {
                 opacity: 1;
+            }
+            .episode-edit-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .episode-edit-item .ep-number {
+                width: 100%;
+            }
+            .episode-edit-item .ep-title,
+            .episode-edit-item .ep-url,
+            .episode-edit-item .ep-status {
+                width: 100%;
             }
         }
         @media (max-width: 480px) {
@@ -467,10 +572,16 @@
                 <textarea id="titleDescription" placeholder="Описание тайтла..."></textarea>
             </div>
             
+            <!-- ===== НОВЫЙ ИНТЕРАКТИВНЫЙ СПИСОК СЕРИЙ ===== -->
             <div class="form-group">
-                <label>Список серий (JSON-формат)</label>
-                <textarea id="titleEpisodesList" placeholder='[{"number":1,"title":"Первая серия","url":"https://...","status":"Озвучено"}]' style="min-height:100px; font-size:12px;"></textarea>
-                <small style="color:#666;">Формат: [{"number":1,"title":"Название","url":"ссылка","status":"Озвучено"}]</small>
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>📺 Список серий</span>
+                    <button type="button" class="add-episode-btn" onclick="addEpisode()">➕ Добавить серию</button>
+                </label>
+                <div id="episodesEditor" class="episodes-editor">
+                    <div class="episodes-empty">Загрузка...</div>
+                </div>
+                <small style="color:#666; display:block; margin-top:5px;">Номер, название, ссылка на Google Drive и статус серии</small>
             </div>
             
             <button type="submit" class="submit-btn" id="submitBtn">💾 Сохранить</button>
@@ -534,6 +645,84 @@
         }
     }
 
+    // ===== ФУНКЦИИ УПРАВЛЕНИЯ СЕРИЯМИ =====
+
+    function renderEpisodesEditor(episodes) {
+        const container = document.getElementById('episodesEditor');
+        
+        if (!episodes || episodes.length === 0) {
+            container.innerHTML = `
+                <div class="episodes-empty">📭 Список серий пуст. Нажмите "➕ Добавить серию"</div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = episodes.map((ep, index) => `
+            <div class="episode-edit-item">
+                <input type="number" class="ep-number" value="${ep.number}" placeholder="№" data-index="${index}" data-field="number" min="1">
+                <input type="text" class="ep-title" value="${ep.title || ''}" placeholder="Название серии" data-index="${index}" data-field="title">
+                <input type="text" class="ep-url" value="${ep.url || ''}" placeholder="Ссылка на Google Drive" data-index="${index}" data-field="url">
+                <select class="ep-status" data-index="${index}" data-field="status">
+                    <option value="Озвучено" ${ep.status === 'Озвучено' ? 'selected' : ''}>✅ Озвучено</option>
+                    <option value="Скоро" ${ep.status === 'Скоро' ? 'selected' : ''}>⏳ Скоро</option>
+                    <option value="В работе" ${ep.status === 'В работе' ? 'selected' : ''}>🔧 В работе</option>
+                </select>
+                <button class="remove-ep-btn" onclick="removeEpisode(${index})" title="Удалить серию">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.removeEpisode = function(index) {
+        const episodes = getEpisodesFromEditor();
+        if (episodes.length <= 1) {
+            if (!confirm('Удалить последнюю серию?')) return;
+        }
+        episodes.splice(index, 1);
+        // Перенумеровываем
+        episodes.forEach((ep, i) => ep.number = i + 1);
+        renderEpisodesEditor(episodes);
+    };
+
+    window.addEpisode = function() {
+        const episodes = getEpisodesFromEditor();
+        episodes.push({ 
+            number: episodes.length + 1, 
+            title: '', 
+            url: '', 
+            status: 'Скоро' 
+        });
+        renderEpisodesEditor(episodes);
+        // Скроллим к новой серии
+        const container = document.getElementById('episodesEditor');
+        const lastItem = container.lastElementChild;
+        if (lastItem) {
+            lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const firstInput = lastItem.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }
+    };
+
+    function getEpisodesFromEditor() {
+        const container = document.getElementById('episodesEditor');
+        const items = container.querySelectorAll('.episode-edit-item');
+        const episodes = [];
+        items.forEach(el => {
+            const number = parseInt(el.querySelector('[data-field="number"]').value) || 0;
+            const title = el.querySelector('[data-field="title"]').value || '';
+            const url = el.querySelector('[data-field="url"]').value || '';
+            const status = el.querySelector('[data-field="status"]').value || 'Скоро';
+            episodes.push({ number, title, url, status });
+        });
+        return episodes;
+    }
+
+    function fillEpisodesEditor(episodesList) {
+        const episodes = episodesList || [];
+        renderEpisodesEditor(episodes);
+    }
+
+    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+
     function getFilteredTitles() {
         let titles = allTitles;
         
@@ -571,7 +760,6 @@
         container.innerHTML = filtered.map(title => {
             const image = title.imageVertical || title.imageHorizontal || title.image || 'https://via.placeholder.com/200x280/3a0035/fff?text=No+Image';
             
-            // Админ-кнопки
             let adminButtons = '';
             if (isAdmin) {
                 adminButtons = `
@@ -652,6 +840,8 @@
         document.getElementById('submitBtn').textContent = '💾 Создать';
         document.getElementById('editId').value = '';
         document.getElementById('titleForm').reset();
+        document.getElementById('titleId').disabled = false;
+        renderEpisodesEditor([]);
         document.getElementById('modalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
     };
@@ -675,7 +865,9 @@
         document.getElementById('titleImageVert').value = title.imageVertical || '';
         document.getElementById('titleImageHoriz').value = title.imageHorizontal || '';
         document.getElementById('titleDescription').value = title.description || '';
-        document.getElementById('titleEpisodesList').value = JSON.stringify(title.episodesList || [], null, 2);
+        
+        // Заполняем интерактивный список серий
+        renderEpisodesEditor(title.episodesList || []);
         
         document.getElementById('modalOverlay').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -706,18 +898,11 @@
         const imageHorizontal = document.getElementById('titleImageHoriz').value.trim();
         const description = document.getElementById('titleDescription').value.trim();
         
-        let episodesList = [];
-        try {
-            const raw = document.getElementById('titleEpisodesList').value.trim();
-            if (raw) {
-                episodesList = JSON.parse(raw);
-            }
-        } catch (e) {
-            alert('❌ Ошибка в формате JSON списка серий. Проверьте синтаксис.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = '💾 Сохранить';
-            return;
-        }
+        // Получаем серии из интерактивного редактора
+        const episodesList = getEpisodesFromEditor();
+        
+        // Если количество серий не совпадает с episodesList, обновляем
+        const finalEpisodes = episodes > 0 ? episodes : episodesList.length;
         
         const data = {
             id: id,
@@ -725,7 +910,7 @@
             nameEn: nameEn,
             type: type,
             year: year,
-            episodes: episodes,
+            episodes: finalEpisodes,
             rating: rating,
             genres: genres,
             imageVertical: imageVertical,

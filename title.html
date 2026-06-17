@@ -268,19 +268,38 @@
             border-color: #6d076d;
             color: #fff;
         }
-        .admin-panel .episode-item-edit {
+
+        /* ===== НОВЫЙ СТИЛЬ ДЛЯ СПИСКА СЕРИЙ ===== */
+        .episodes-editor {
+            margin-top: 10px;
+        }
+        .episode-edit-item {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
+            gap: 8px;
             align-items: center;
-            padding: 8px;
+            padding: 8px 12px;
             background: rgba(58, 0, 53, 0.2);
             border-radius: 8px;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+            border: 1px solid #3a0035;
         }
-        .admin-panel .episode-item-edit input {
-            flex: 1;
-            min-width: 80px;
+        .episode-edit-item:hover {
+            border-color: #6d076d;
+        }
+        .episode-edit-item .ep-number {
+            width: 50px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+            text-align: center;
+        }
+        .episode-edit-item .ep-title {
+            flex: 2;
+            min-width: 120px;
             padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #3a0035;
@@ -288,27 +307,65 @@
             color: #fff;
             font-size: 13px;
         }
-        .admin-panel .episode-item-edit .remove-ep-btn {
+        .episode-edit-item .ep-url {
+            flex: 3;
+            min-width: 150px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .episode-edit-item .ep-status {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+            min-width: 80px;
+        }
+        .episode-edit-item .ep-status option {
+            background: #1a001a;
+        }
+        .episode-edit-item .remove-ep-btn {
             background: #6d0000;
             color: #fff;
             border: none;
             border-radius: 15px;
             padding: 4px 12px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            transition: background 0.3s;
+            flex-shrink: 0;
         }
-        .admin-panel .add-ep-btn {
-            padding: 6px 16px;
+        .episode-edit-item .remove-ep-btn:hover {
+            background: #8a0000;
+        }
+
+        .add-episode-btn {
+            padding: 8px 20px;
             background: #6d076d;
             color: #fff;
             border: none;
-            border-radius: 15px;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 8px;
         }
-        .admin-panel .add-ep-btn:hover {
+        .add-episode-btn:hover {
             background: #8a0a8a;
+            transform: translateY(-2px);
+        }
+
+        .episodes-empty {
+            color: #666;
+            text-align: center;
+            padding: 15px;
+            font-style: italic;
         }
 
         .avg-rating {
@@ -329,6 +386,18 @@
             }
             .comment-user {
                 flex-wrap: wrap;
+            }
+            .episode-edit-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .episode-edit-item .ep-number {
+                width: 100%;
+            }
+            .episode-edit-item .ep-title,
+            .episode-edit-item .ep-url,
+            .episode-edit-item .ep-status {
+                width: 100%;
             }
         }
     </style>
@@ -409,7 +478,7 @@
         }
     }
 
-    // ===== КОММЕНТАРИИ =====
+    // ===== КОММЕНТАРИИ (без изменений) =====
 
     function renderComments(comments) {
         const container = document.getElementById('comments-list');
@@ -424,7 +493,6 @@
         container.innerHTML = comments.map(c => {
             const isOwner = user && c.uid === user.uid;
             
-            // Обработка @упоминаний
             let textHtml = c.text || '';
             if (c.mentions) {
                 c.mentions.forEach(email => {
@@ -435,9 +503,7 @@
                 });
             }
             
-            // Безопасная обработка текста (экранирование)
             textHtml = textHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // Восстанавливаем ссылки
             textHtml = textHtml.replace(
                 /&lt;a href="profile\.html\?email=([^"]+)" class="mention"&gt;@([^&]+)&lt;\/a&gt;/g,
                 `<a href="profile.html?email=$1" class="mention">@$2</a>`
@@ -498,7 +564,6 @@
         if (result.success) {
             text.value = '';
             await loadComments();
-            // Обновляем среднюю оценку
             await updateAverageRating();
         } else {
             alert('❌ Ошибка: ' + result.error);
@@ -581,7 +646,7 @@
         }
     }
 
-    // ===== АДМИН-ФУНКЦИИ =====
+    // ===== АДМИН-ФУНКЦИИ (ОБНОВЛЕННЫЕ) =====
 
     window.toggleAdminEdit = function() {
         const panel = document.getElementById('adminEditPanel');
@@ -607,36 +672,70 @@
         renderEpisodeEditor(t.episodesList || []);
     }
 
+    // ===== НОВАЯ ФУНКЦИЯ РЕНДЕРИНГА СЕРИЙ =====
+
     function renderEpisodeEditor(episodes) {
         const container = document.getElementById('episodesEditor');
+        
+        if (!episodes || episodes.length === 0) {
+            container.innerHTML = `
+                <div class="episodes-empty">📭 Список серий пуст. Нажмите "➕ Добавить серию"</div>
+            `;
+            return;
+        }
+        
         container.innerHTML = episodes.map((ep, index) => `
-            <div class="episode-item-edit">
-                <input type="number" value="${ep.number}" placeholder="№" style="width:50px;" data-index="${index}" data-field="number">
-                <input type="text" value="${ep.title || ''}" placeholder="Название" data-index="${index}" data-field="title">
-                <input type="text" value="${ep.url || ''}" placeholder="Ссылка" data-index="${index}" data-field="url">
-                <input type="text" value="${ep.status || 'Скоро'}" placeholder="Статус" style="width:100px;" data-index="${index}" data-field="status">
-                <button class="remove-ep-btn" onclick="removeEpisode(${index})">✕</button>
+            <div class="episode-edit-item">
+                <input type="number" class="ep-number" value="${ep.number}" placeholder="№" data-index="${index}" data-field="number" min="1">
+                <input type="text" class="ep-title" value="${ep.title || ''}" placeholder="Название серии" data-index="${index}" data-field="title">
+                <input type="text" class="ep-url" value="${ep.url || ''}" placeholder="Ссылка на Google Drive" data-index="${index}" data-field="url">
+                <select class="ep-status" data-index="${index}" data-field="status">
+                    <option value="Озвучено" ${ep.status === 'Озвучено' ? 'selected' : ''}>✅ Озвучено</option>
+                    <option value="Скоро" ${ep.status === 'Скоро' ? 'selected' : ''}>⏳ Скоро</option>
+                    <option value="В работе" ${ep.status === 'В работе' ? 'selected' : ''}>🔧 В работе</option>
+                </select>
+                <button class="remove-ep-btn" onclick="removeEpisode(${index})" title="Удалить серию">✕</button>
             </div>
         `).join('');
     }
 
+    // ===== ФУНКЦИИ УПРАВЛЕНИЯ СЕРИЯМИ =====
+
     window.removeEpisode = function(index) {
         const episodes = getEpisodesFromEditor();
+        if (episodes.length <= 1) {
+            if (!confirm('Удалить последнюю серию?')) return;
+        }
         episodes.splice(index, 1);
+        // Перенумеровываем
+        episodes.forEach((ep, i) => ep.number = i + 1);
         renderEpisodeEditor(episodes);
     };
 
     window.addEpisode = function() {
         const episodes = getEpisodesFromEditor();
-        episodes.push({ number: episodes.length + 1, title: '', url: '', status: 'Скоро' });
+        episodes.push({ 
+            number: episodes.length + 1, 
+            title: '', 
+            url: '', 
+            status: 'Скоро' 
+        });
         renderEpisodeEditor(episodes);
+        // Скроллим к новой серии
+        const container = document.getElementById('episodesEditor');
+        const lastItem = container.lastElementChild;
+        if (lastItem) {
+            lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const firstInput = lastItem.querySelector('input');
+            if (firstInput) firstInput.focus();
+        }
     };
 
     function getEpisodesFromEditor() {
         const container = document.getElementById('episodesEditor');
-        const inputs = container.querySelectorAll('.episode-item-edit');
+        const items = container.querySelectorAll('.episode-edit-item');
         const episodes = [];
-        inputs.forEach(el => {
+        items.forEach(el => {
             const number = parseInt(el.querySelector('[data-field="number"]').value) || 0;
             const title = el.querySelector('[data-field="title"]').value || '';
             const url = el.querySelector('[data-field="url"]').value || '';
@@ -646,6 +745,42 @@
         return episodes;
     }
 
+    // Обновляем данные с серий в реальном времени при изменении полей
+    function setupEpisodesAutoSave() {
+        const container = document.getElementById('episodesEditor');
+        if (!container) return;
+        
+        // Используем делегирование событий для всех полей
+        container.addEventListener('input', function(e) {
+            const target = e.target;
+            if (target.closest('.episode-edit-item')) {
+                // Просто обновляем скрытые данные, не перерендеривая
+                // Это позволяет сохранять состояние при редактировании
+            }
+        });
+        
+        // При потере фокуса обновляем нумерацию
+        container.addEventListener('change', function(e) {
+            const target = e.target;
+            if (target.classList.contains('ep-number')) {
+                // Обновляем все номера последовательно
+                const items = container.querySelectorAll('.episode-edit-item');
+                items.forEach((el, index) => {
+                    const numInput = el.querySelector('[data-field="number"]');
+                    if (numInput) {
+                        // Если поле пустое или 0, ставим index+1
+                        const val = parseInt(numInput.value);
+                        if (!val || val < 1) {
+                            numInput.value = index + 1;
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    // ===== СОХРАНЕНИЕ =====
+
     window.saveAdminEdit = async function() {
         const saveBtn = document.getElementById('saveEditBtn');
         saveBtn.disabled = true;
@@ -653,12 +788,20 @@
         
         const episodes = getEpisodesFromEditor();
         
+        // Проверяем, что все серии имеют номер
+        let hasError = false;
+        episodes.forEach((ep, i) => {
+            if (!ep.number || ep.number < 1) {
+                ep.number = i + 1;
+            }
+        });
+        
         const data = {
             name: document.getElementById('editName').value.trim(),
             nameEn: document.getElementById('editNameEn').value.trim(),
             type: document.getElementById('editType').value,
             year: parseInt(document.getElementById('editYear').value) || 0,
-            episodes: parseInt(document.getElementById('editEpisodes').value) || 0,
+            episodes: parseInt(document.getElementById('editEpisodes').value) || episodes.length,
             rating: parseFloat(document.getElementById('editRating').value) || 0,
             genres: document.getElementById('editGenres').value.split(',').map(s => s.trim()).filter(Boolean),
             imageVertical: document.getElementById('editImageVert').value.trim(),
@@ -666,6 +809,11 @@
             description: document.getElementById('editDescription').value.trim(),
             episodesList: episodes
         };
+        
+        // Обновляем количество серий, если оно не совпадает
+        if (data.episodes !== episodes.length) {
+            data.episodes = episodes.length;
+        }
         
         const result = await updateTitle(titleId, data);
         if (result.success) {
@@ -695,7 +843,6 @@
         container.innerHTML = `
             <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
         `;
-        // Отслеживаем просмотр
         if (episodeNumber) {
             trackViewEpisode(episodeNumber);
         }
@@ -707,7 +854,6 @@
         const content = document.getElementById('title-content');
         content.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
         
-        // Загружаем из Firestore
         const result = await getTitleById(titleId);
         
         if (!result.success || !result.data) {
@@ -724,7 +870,7 @@
         
         const title = currentTitle;
         
-        // Получаем роли
+        // Роли
         const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
         
         let charactersHtml = '';
@@ -778,6 +924,7 @@
                 <button class="admin-edit-btn" onclick="toggleAdminEdit()">✏️ Редактировать тайтл</button>
                 <div id="adminEditPanel" class="admin-panel">
                     <h3 style="color:#d000ff;">✏️ Редактирование тайтла</h3>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label>Название (рус.)</label>
@@ -788,6 +935,7 @@
                             <input type="text" id="editNameEn">
                         </div>
                     </div>
+                    
                     <div class="form-row">
                         <div class="form-group">
                             <label>Тип</label>
@@ -802,36 +950,46 @@
                             <input type="number" id="editYear">
                         </div>
                         <div class="form-group">
-                            <label>Серий</label>
-                            <input type="number" id="editEpisodes">
+                            <label>Кол-во серий</label>
+                            <input type="number" id="editEpisodes" min="0">
                         </div>
                         <div class="form-group">
                             <label>Рейтинг</label>
                             <input type="number" id="editRating" step="0.1" min="0" max="5">
                         </div>
                     </div>
+                    
                     <div class="form-group">
                         <label>Жанры (через запятую)</label>
                         <input type="text" id="editGenres">
                     </div>
+                    
                     <div class="form-group">
                         <label>Вертикальная обложка</label>
                         <input type="text" id="editImageVert">
                     </div>
+                    
                     <div class="form-group">
                         <label>Горизонтальная обложка</label>
                         <input type="text" id="editImageHoriz">
                     </div>
+                    
                     <div class="form-group">
                         <label>Описание</label>
                         <textarea id="editDescription"></textarea>
                     </div>
+                    
                     <div class="form-group">
-                        <label>Список серий</label>
-                        <div id="episodesEditor"></div>
-                        <button type="button" class="add-ep-btn" onclick="addEpisode()">➕ Добавить серию</button>
+                        <label style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>📺 Список серий</span>
+                            <button type="button" class="add-episode-btn" onclick="addEpisode()">➕ Добавить серию</button>
+                        </label>
+                        <div id="episodesEditor" class="episodes-editor">
+                            <div class="episodes-empty">Загрузка...</div>
+                        </div>
                     </div>
-                    <div style="display:flex; gap:10px; margin-top:15px;">
+                    
+                    <div style="display:flex; gap:10px; margin-top:20px;">
                         <button class="save-btn" id="saveEditBtn" onclick="saveAdminEdit()">💾 Сохранить изменения</button>
                         <button class="cancel-btn" onclick="document.getElementById('adminEditPanel').classList.remove('active')">Отмена</button>
                     </div>
@@ -877,10 +1035,11 @@
             <div id="comments-container"></div>
         `;
 
-        // Рендерим форму комментариев
         renderCommentForm();
-        // Обновляем среднюю оценку после загрузки комментариев
         setTimeout(updateAverageRating, 500);
+        
+        // Настраиваем автосохранение для серий
+        setTimeout(setupEpisodesAutoSave, 100);
     }
 
     // ===== ИНИЦИАЛИЗАЦИЯ =====
