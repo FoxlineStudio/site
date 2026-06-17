@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Просмотр - foxline Studio</title>
+    <title>Просмотр - Dream Sound Dubbing</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
     <script type="module" src="firebase-config.js"></script>
     <style>
         .comment-item {
-            background: #2a002a;
-            border-left: 4px solid #d000ff;
+            background: var(--bg-comment);
+            border-left: 4px solid var(--color-accent);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
@@ -38,43 +38,43 @@
         }
         .comment-avatar:hover {
             transform: scale(1.1);
-            border-color: #d000ff;
+            border-color: var(--color-accent);
         }
         .comment-name {
-            color: #d000ff;
+            color: var(--color-accent);
             font-weight: bold;
             text-decoration: none;
             transition: color 0.3s;
         }
         .comment-name:hover {
-            color: #ff44dd;
+            color: var(--color-accent2);
             text-decoration: underline;
         }
         .comment-rating {
-            color: #ffaa00;
+            color: var(--color-warning);
         }
         .comment-text {
-            color: #fff;
+            color: var(--text-primary);
             margin-top: 8px;
             word-wrap: break-word;
             line-height: 1.5;
         }
         .comment-text .mention {
-            color: #d000ff;
+            color: var(--color-accent);
             font-weight: bold;
             text-decoration: none;
             cursor: pointer;
         }
         .comment-text .mention:hover {
-            color: #ff44dd;
+            color: var(--color-accent2);
             text-decoration: underline;
         }
         .comment-time {
-            color: #666;
+            color: var(--text-muted);
             font-size: 12px;
         }
         .comment-delete {
-            background: #6d076d;
+            background: var(--color-accent);
             color: #fff;
             border: none;
             padding: 4px 12px;
@@ -84,7 +84,7 @@
             transition: background 0.3s;
         }
         .comment-delete:hover {
-            background: #8a0a8a;
+            background: var(--color-accent2);
         }
 
         .comment-form {
@@ -98,18 +98,18 @@
             min-width: 200px;
             padding: 12px;
             border-radius: 10px;
-            border: 2px solid #6d076d;
-            background: rgba(58, 0, 53, 0.2);
-            color: #fff;
+            border: 2px solid var(--color-accent);
+            background: var(--bg-input);
+            color: var(--text-primary);
             min-height: 80px;
             font-size: 16px;
             font-family: inherit;
             resize: vertical;
         }
         .comment-form textarea:focus {
-            border-color: #d000ff;
+            border-color: var(--color-accent2);
             outline: none;
-            box-shadow: 0 0 20px rgba(208, 0, 255, 0.2);
+            box-shadow: 0 0 20px rgba(74, 144, 217, 0.2);
         }
         .comment-form .form-actions {
             display: flex;
@@ -120,14 +120,14 @@
         .comment-form select {
             padding: 12px;
             border-radius: 10px;
-            border: 2px solid #6d076d;
-            background: #1a001a;
-            color: #fff;
+            border: 2px solid var(--color-accent);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-size: 16px;
         }
         .comment-form button {
             padding: 12px 25px;
-            background: linear-gradient(135deg, #6d076d, #3a0035);
+            background: var(--gradient-primary);
             color: white;
             border: none;
             border-radius: 50px;
@@ -138,7 +138,7 @@
         }
         .comment-form button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(74, 144, 217, 0.3);
         }
         .comment-form button:disabled {
             opacity: 0.5;
@@ -146,38 +146,38 @@
             transform: none;
         }
         .comment-form .hint {
-            color: #666;
+            color: var(--text-muted);
             font-size: 12px;
             width: 100%;
             margin-top: 5px;
         }
 
         .no-comments {
-            color: #aaa;
+            color: var(--text-muted);
             text-align: center;
             padding: 20px;
         }
         .auth-prompt {
-            background: #2a002a;
+            background: var(--bg-welcome);
             padding: 20px;
             border-radius: 10px;
             text-align: center;
-            color: #aaa;
+            color: var(--text-muted);
         }
         .auth-prompt a {
-            color: #d000ff;
+            color: var(--color-accent);
             text-decoration: none;
             font-weight: bold;
         }
         .auth-prompt a:hover {
+            color: var(--color-accent2);
             text-decoration: underline;
         }
 
-        /* Админ-стили */
         .admin-edit-btn {
             display: inline-block;
             padding: 8px 20px;
-            background: linear-gradient(135deg, #6d076d, #3a0035);
+            background: var(--gradient-primary);
             color: #fff;
             border: none;
             border-radius: 25px;
@@ -189,15 +189,15 @@
         }
         .admin-edit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(74, 144, 217, 0.3);
         }
 
         .admin-panel {
             display: none;
             padding: 20px;
-            background: rgba(208, 0, 255, 0.1);
+            background: var(--bg-admin-panel);
             border-radius: 15px;
-            border: 1px solid #6d076d;
+            border: 1px solid var(--color-accent);
             margin-top: 15px;
         }
         .admin-panel.active {
@@ -207,7 +207,7 @@
             margin-bottom: 12px;
         }
         .admin-panel .form-group label {
-            color: #aaa;
+            color: var(--text-muted);
             font-size: 13px;
             display: block;
             margin-bottom: 4px;
@@ -218,9 +218,9 @@
             width: 100%;
             padding: 8px 12px;
             border-radius: 8px;
-            border: 2px solid #3a0035;
-            background: rgba(58, 0, 53, 0.2);
-            color: #fff;
+            border: 2px solid var(--border-primary);
+            background: var(--bg-input);
+            color: var(--text-primary);
             font-size: 14px;
             box-sizing: border-box;
             font-family: inherit;
@@ -240,7 +240,7 @@
         }
         .admin-panel .save-btn {
             padding: 10px 30px;
-            background: linear-gradient(135deg, #6d076d, #3a0035);
+            background: var(--gradient-primary);
             color: #fff;
             border: none;
             border-radius: 25px;
@@ -251,13 +251,13 @@
         }
         .admin-panel .save-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(74, 144, 217, 0.3);
         }
         .admin-panel .cancel-btn {
             padding: 10px 30px;
-            background: #3a0035;
-            color: #aaa;
-            border: 2px solid #3a0035;
+            background: var(--bg-input);
+            color: var(--text-muted);
+            border: 2px solid var(--border-primary);
             border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
@@ -265,11 +265,10 @@
             transition: all 0.3s ease;
         }
         .admin-panel .cancel-btn:hover {
-            border-color: #6d076d;
-            color: #fff;
+            border-color: var(--color-accent);
+            color: var(--text-primary);
         }
 
-        /* ===== СПИСОК СЕРИЙ ===== */
         .episodes-editor {
             margin-top: 10px;
         }
@@ -279,21 +278,21 @@
             gap: 8px;
             align-items: center;
             padding: 8px 12px;
-            background: rgba(58, 0, 53, 0.2);
+            background: var(--bg-input);
             border-radius: 8px;
             margin-bottom: 6px;
-            border: 1px solid #3a0035;
+            border: 1px solid var(--border-primary);
         }
         .episode-edit-item:hover {
-            border-color: #6d076d;
+            border-color: var(--color-accent);
         }
         .episode-edit-item .ep-number {
             width: 50px;
             padding: 6px 8px;
             border-radius: 6px;
-            border: 1px solid #3a0035;
-            background: rgba(58, 0, 53, 0.3);
-            color: #fff;
+            border: 1px solid var(--border-primary);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-size: 13px;
             text-align: center;
         }
@@ -302,9 +301,9 @@
             min-width: 120px;
             padding: 6px 10px;
             border-radius: 6px;
-            border: 1px solid #3a0035;
-            background: rgba(58, 0, 53, 0.3);
-            color: #fff;
+            border: 1px solid var(--border-primary);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-size: 13px;
         }
         .episode-edit-item .ep-url {
@@ -312,25 +311,25 @@
             min-width: 150px;
             padding: 6px 10px;
             border-radius: 6px;
-            border: 1px solid #3a0035;
-            background: rgba(58, 0, 53, 0.3);
-            color: #fff;
+            border: 1px solid var(--border-primary);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-size: 13px;
         }
         .episode-edit-item .ep-status {
             padding: 6px 10px;
             border-radius: 6px;
-            border: 1px solid #3a0035;
-            background: rgba(58, 0, 53, 0.3);
-            color: #fff;
+            border: 1px solid var(--border-primary);
+            background: var(--bg-card);
+            color: var(--text-primary);
             font-size: 13px;
             min-width: 80px;
         }
         .episode-edit-item .ep-status option {
-            background: #1a001a;
+            background: var(--bg-card);
         }
         .episode-edit-item .remove-ep-btn {
-            background: #6d0000;
+            background: var(--color-danger);
             color: #fff;
             border: none;
             border-radius: 15px;
@@ -341,12 +340,12 @@
             flex-shrink: 0;
         }
         .episode-edit-item .remove-ep-btn:hover {
-            background: #8a0000;
+            background: #e05555;
         }
 
         .add-episode-btn {
             padding: 8px 20px;
-            background: #6d076d;
+            background: var(--color-accent);
             color: #fff;
             border: none;
             border-radius: 20px;
@@ -357,12 +356,12 @@
             margin-top: 8px;
         }
         .add-episode-btn:hover {
-            background: #8a0a8a;
+            background: var(--color-accent2);
             transform: translateY(-2px);
         }
 
         .episodes-empty {
-            color: #666;
+            color: var(--text-muted);
             text-align: center;
             padding: 15px;
             font-style: italic;
@@ -370,76 +369,123 @@
 
         .avg-rating {
             display: inline-block;
-            background: rgba(208, 0, 255, 0.15);
+            background: var(--bg-welcome);
             padding: 4px 16px;
             border-radius: 25px;
-            border: 1px solid #6d076d;
+            border: 1px solid var(--color-accent);
             margin-left: 10px;
             font-size: 14px;
-            color: #ffaa00;
+            color: var(--color-warning);
         }
 
-        /* ===== ПОЛНОЭКРАННЫЙ ПЛЕЕР ===== */
+        /* ===== ПОЛНОЭКРАННЫЙ РЕЖИМ ДЛЯ ПЛЕЕРА ===== */
         .player-wrapper {
             position: relative;
             width: 100%;
-            background: #000;
+            background: var(--bg-player);
             border-radius: 15px;
             overflow: hidden;
             margin: 20px 0;
             aspect-ratio: 16/9;
-        }
-        .player-wrapper iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
-        .player-wrapper .fullscreen-btn {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            z-index: 10;
-            backdrop-filter: blur(4px);
-            user-select: none;
-        }
-        .player-wrapper .fullscreen-btn:hover {
-            background: rgba(208, 0, 255, 0.6);
-            border-color: #d000ff;
-            transform: scale(1.1);
-        }
-        .player-wrapper .fullscreen-btn:active {
-            transform: scale(0.9);
+            border: 2px solid var(--border-primary);
         }
 
-        /* Полноэкранный режим для плеера */
         .player-wrapper.fullscreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
+            aspect-ratio: auto;
             z-index: 99999;
+            border: none;
             border-radius: 0;
             margin: 0;
-            aspect-ratio: auto;
             background: #000;
         }
-        .player-wrapper.fullscreen .fullscreen-btn {
+
+        .player-wrapper.fullscreen .player-container {
+            border-radius: 0;
+            border: none;
+        }
+
+        .player-wrapper.fullscreen .player-controls {
+            position: absolute;
             bottom: 30px;
-            right: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 8px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .player-wrapper.fullscreen .player-controls button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .player-wrapper.fullscreen .player-controls button:hover {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .player-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-player);
+            border-radius: 15px;
+            overflow: hidden;
+            border: none;
+        }
+
+        .player-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .fullscreen-btn {
+            padding: 8px 20px;
+            background: var(--gradient-primary);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fullscreen-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 144, 217, 0.3);
+        }
+
+        .fullscreen-btn .icon {
+            font-size: 18px;
+        }
+
+        /* Скрываем скролл в полноэкранном режиме */
+        body.fullscreen-mode {
+            overflow: hidden !important;
         }
 
         @media (max-width: 768px) {
@@ -462,21 +508,13 @@
             .episode-edit-item .ep-status {
                 width: 100%;
             }
-            .player-wrapper .fullscreen-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 16px;
-                bottom: 12px;
-                right: 12px;
+            .player-wrapper.fullscreen .player-controls {
+                bottom: 15px;
+                padding: 6px 14px;
             }
-        }
-        @media (max-width: 480px) {
-            .player-wrapper .fullscreen-btn {
-                width: 34px;
-                height: 34px;
-                font-size: 14px;
-                bottom: 10px;
-                right: 10px;
+            .player-wrapper.fullscreen .player-controls button {
+                font-size: 12px;
+                padding: 6px 12px;
             }
         }
     </style>
@@ -486,7 +524,7 @@
 <header class="fixed-header">
     <div class="nav-buttons">
         <a href="index.html">
-            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+            <img src="logo1.jpg" alt="Dream Sound Dubbing" class="header-logo">
         </a>
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
@@ -494,12 +532,41 @@
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
+        <a href="voice-order.html" class="nav-icon-btn">📝Заявка</a>
+        <a href="admin-orders.html" class="nav-icon-btn" id="adminLink" style="display:none;">📋 Заказы</a>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Переключить тему">☀️</button>
     </div>
 </header>
 
+<script>
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.innerHTML = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.innerHTML = savedTheme === 'dark' ? '🌙' : '☀️';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadTheme);
+</script>
+
 <div class="container">
     <div class="header">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <hr>
+        <h1 class="title" style="font-size:32px;">🎬 Просмотр</h1>
         <hr>
     </div>
     
@@ -510,7 +577,7 @@
 
 <div class="container" style="text-align: center;">
     <hr>
-    <p>© 2026 foxline Studio</p>
+    <p style="color:var(--text-muted);">© 2026 Dream Sound Dubbing</p>
 </div>
 
 <script type="module">
@@ -534,6 +601,7 @@
     let isAdmin = false;
     let currentTitle = null;
     let allComments = [];
+    let isFullscreen = false;
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -557,40 +625,47 @@
         }
     }
 
-    // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
+    async function updateAdminLink(user) {
+        const link = document.getElementById('adminLink');
+        if (!link) return;
+        if (user) {
+            const role = await getUserRole(user.uid);
+            link.style.display = role === 'admin' ? 'inline-flex' : 'none';
+        } else {
+            link.style.display = 'none';
+        }
+    }
 
+    // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
     window.toggleFullscreen = function() {
         const wrapper = document.getElementById('playerWrapper');
+        const body = document.body;
+        
         if (!wrapper) return;
         
-        if (!document.fullscreenElement && !wrapper.classList.contains('fullscreen')) {
-            // Пытаемся использовать Fullscreen API
-            if (wrapper.requestFullscreen) {
-                wrapper.requestFullscreen().catch(() => {
-                    // Если не поддерживается, используем CSS
-                    wrapper.classList.toggle('fullscreen');
-                });
-            } else {
-                wrapper.classList.toggle('fullscreen');
-            }
+        isFullscreen = !isFullscreen;
+        
+        if (isFullscreen) {
+            wrapper.classList.add('fullscreen');
+            body.classList.add('fullscreen-mode');
         } else {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                wrapper.classList.remove('fullscreen');
-            }
+            wrapper.classList.remove('fullscreen');
+            body.classList.remove('fullscreen-mode');
         }
     };
 
-    // Следим за выходом из полноэкранного режима
-    document.addEventListener('fullscreenchange', () => {
-        const wrapper = document.getElementById('playerWrapper');
-        if (wrapper && !document.fullscreenElement) {
-            wrapper.classList.remove('fullscreen');
+    // Закрытие полноэкранного режима по Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isFullscreen) {
+            const wrapper = document.getElementById('playerWrapper');
+            const body = document.body;
+            if (wrapper) {
+                wrapper.classList.remove('fullscreen');
+                body.classList.remove('fullscreen-mode');
+                isFullscreen = false;
+            }
         }
     });
-
-    // ===== КОММЕНТАРИИ =====
 
     function renderComments(comments) {
         const container = document.getElementById('comments-list');
@@ -623,7 +698,7 @@
             
             const avatarHtml = c.photoURL ? 
                 `<a href="profile.html?uid=${c.uid}"><img src="${c.photoURL}" class="comment-avatar" onerror="this.style.display='none'"></a>` : 
-                `<a href="profile.html?uid=${c.uid}"><div style="width:36px;height:36px;border-radius:50%;background:#3a0035;display:flex;align-items:center;justify-content:center;color:#d000ff;font-size:16px;cursor:pointer;">👤</div></a>`;
+                `<a href="profile.html?uid=${c.uid}"><div style="width:36px;height:36px;border-radius:50%;background:var(--border-primary);display:flex;align-items:center;justify-content:center;color:var(--color-accent);font-size:16px;cursor:pointer;">👤</div></a>`;
             
             return `
                 <div class="comment-item">
@@ -646,7 +721,7 @@
         const container = document.getElementById('comments-list');
         if (!container) return;
         
-        container.innerHTML = '<div style="color:#aaa; text-align:center; padding:10px;">⏳ Загрузка комментариев...</div>';
+        container.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:10px;">⏳ Загрузка комментариев...</div>';
         
         try {
             const comments = await getComments(titleId);
@@ -654,7 +729,7 @@
             renderComments(comments);
         } catch (error) {
             console.error('Ошибка загрузки комментариев:', error);
-            container.innerHTML = `<div class="no-comments" style="color:#ff6b6b;">❌ Ошибка загрузки комментариев</div>`;
+            container.innerHTML = `<div class="no-comments" style="color:var(--color-danger);">❌ Ошибка загрузки комментариев</div>`;
         }
     }
 
@@ -704,7 +779,7 @@
         
         if (user) {
             container.innerHTML = `
-                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
+                <h2 style="color:var(--color-accent); margin-top:30px;">💬 Комментарии</h2>
                 <div class="comment-form">
                     <textarea id="commentText" placeholder="Напишите ваш комментарий... (используйте @email для отметки)"></textarea>
                     <div class="form-actions">
@@ -717,13 +792,13 @@
                         </select>
                         <button onclick="handleAddComment()">📤 Отправить</button>
                     </div>
-                    <div class="hint">💡 Используйте <strong style="color:#d000ff;">@email</strong> чтобы отметить пользователя</div>
+                    <div class="hint">💡 Используйте <strong style="color:var(--color-accent);">@email</strong> чтобы отметить пользователя</div>
                 </div>
                 <div id="comments-list"></div>
             `;
         } else {
             container.innerHTML = `
-                <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
+                <h2 style="color:var(--color-accent); margin-top:30px;">💬 Комментарии</h2>
                 <div class="auth-prompt">
                     <a href="login.html">Войдите</a>, чтобы оставить комментарий
                 </div>
@@ -733,8 +808,6 @@
         
         loadComments();
     }
-
-    // ===== СРЕДНЯЯ ОЦЕНКА =====
 
     async function updateAverageRating() {
         const container = document.getElementById('avgRatingContainer');
@@ -749,16 +822,12 @@
         }
     }
 
-    // ===== ПРОСМОТРЫ =====
-
     async function trackViewEpisode(episodeNumber) {
         const user = getCurrentUser();
         if (user) {
             await trackView(user.uid, titleId, episodeNumber);
         }
     }
-
-    // ===== АДМИН-ФУНКЦИИ =====
 
     window.toggleAdminEdit = function() {
         const panel = document.getElementById('adminEditPanel');
@@ -828,13 +897,6 @@
             status: 'Скоро' 
         });
         renderEpisodeEditor(episodes);
-        const container = document.getElementById('episodesEditor');
-        const lastItem = container.lastElementChild;
-        if (lastItem) {
-            lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            const firstInput = lastItem.querySelector('input');
-            if (firstInput) firstInput.focus();
-        }
     };
 
     function getEpisodesFromEditor() {
@@ -854,7 +916,6 @@
     function setupEpisodesAutoSave() {
         const container = document.getElementById('episodesEditor');
         if (!container) return;
-        
         container.addEventListener('change', function(e) {
             const target = e.target;
             if (target.classList.contains('ep-number')) {
@@ -878,7 +939,6 @@
         saveBtn.textContent = '⏳ Сохранение...';
         
         const episodes = getEpisodesFromEditor();
-        
         episodes.forEach((ep, i) => {
             if (!ep.number || ep.number < 1) {
                 ep.number = i + 1;
@@ -916,32 +976,23 @@
         saveBtn.textContent = '💾 Сохранить изменения';
     };
 
-    // ===== ПЛЕЕР С ПОЛНОЭКРАННЫМ РЕЖИМОМ =====
-
     window.playEpisode = function(url, episodeNumber) {
         const container = document.getElementById('playerContainer');
         if (!url) {
             container.innerHTML = `
-                <div class="player-wrapper" id="playerWrapper">
-                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
-                        <p>Серия ещё не доступна</p>
-                    </div>
+                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-muted); background:var(--bg-player);">
+                    <p>Серия ещё не доступна</p>
                 </div>
             `;
             return;
         }
         container.innerHTML = `
-            <div class="player-wrapper" id="playerWrapper">
-                <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
-                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Полноэкранный режим">⛶</button>
-            </div>
+            <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
         `;
         if (episodeNumber) {
             trackViewEpisode(episodeNumber);
         }
     };
-
-    // ===== ОСНОВНАЯ ЗАГРУЗКА =====
 
     async function loadTitle() {
         const content = document.getElementById('title-content');
@@ -954,7 +1005,7 @@
             if (localTitle) {
                 currentTitle = localTitle;
             } else {
-                content.innerHTML = '<div style="text-align:center; padding:50px; color:#fff;">❌ Тайтл не найден</div>';
+                content.innerHTML = '<div style="text-align:center; padding:50px; color:var(--text-muted);">❌ Тайтл не найден</div>';
                 return;
             }
         } else {
@@ -962,19 +1013,18 @@
         }
         
         const title = currentTitle;
-        
         const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
         
         let charactersHtml = '';
         if (roles.length > 0) {
-            charactersHtml = '<h2 style="color:#d000ff; margin-top:30px;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
+            charactersHtml = '<h2 style="color:var(--color-accent); margin-top:30px;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
             roles.forEach(role => {
                 const voice = window.voicesDatabase?.find(v => v.id === role.voiceId);
                 charactersHtml += `
                     <div class="character-card">
-                        <img src="${role.characterImage || 'https://via.placeholder.com/180x150/3a0035/fff?text=Персонаж'}" class="character-image" onerror="this.src='https://via.placeholder.com/180x150/3a0035/fff?text=?'">
+                        <img src="${role.characterImage || 'https://via.placeholder.com/180x150/d4e8ff/4a90d9?text=Персонаж'}" class="character-image" onerror="this.src='https://via.placeholder.com/180x150/d4e8ff/4a90d9?text=?'">
                         <div class="character-name">${role.character}</div>
-                        <p style="color:#aaa;">Озвучивает: <a href="voice.html?id=${role.voiceId}" style="color:#d000ff;">${voice?.name || role.voiceId}</a></p>
+                        <p style="color:var(--text-muted);">Озвучивает: <a href="voice.html?id=${role.voiceId}" style="color:var(--color-accent);">${voice?.name || role.voiceId}</a></p>
                     </div>
                 `;
             });
@@ -985,12 +1035,12 @@
         let episodesHtml = '';
         if (episodes.length > 0) {
             episodesHtml = `
-                <h2 style="color:#d000ff; margin-top:30px;">📺 Список серий</h2>
+                <h2 style="color:var(--color-accent); margin-top:30px;">📺 Список серий</h2>
                 <div class="episodes-list">
                     ${episodes.map(ep => `
                         <div class="episode-item" onclick="playEpisode('${ep.url}', ${ep.number})" style="cursor:pointer;">
                             <span class="episode-number">Серия ${ep.number}</span>
-                            <span class="episode-title" style="color:#fff;">${ep.title}</span>
+                            <span class="episode-title" style="color:var(--text-primary);">${ep.title}</span>
                             <span class="episode-status ${ep.status === 'Озвучено' ? 'status-ready' : 'status-soon'}">${ep.status}</span>
                         </div>
                     `).join('')}
@@ -999,7 +1049,7 @@
         }
 
         const firstEpisode = episodes.find(ep => ep.url) || { url: '', number: 1 };
-        const posterImage = title.imageHorizontal || title.imageVertical || title.image || 'https://via.placeholder.com/250/3a0035/fff?text=No+Image';
+        const posterImage = title.imageHorizontal || title.imageVertical || title.image || 'https://via.placeholder.com/250/d4e8ff/4a90d9?text=No+Image';
 
         const avgRating = await getAverageRating(titleId);
         const avgRatingHtml = avgRating > 0 ? 
@@ -1011,8 +1061,7 @@
             adminHtml = `
                 <button class="admin-edit-btn" onclick="toggleAdminEdit()">✏️ Редактировать тайтл</button>
                 <div id="adminEditPanel" class="admin-panel">
-                    <h3 style="color:#d000ff;">✏️ Редактирование тайтла</h3>
-                    
+                    <h3 style="color:var(--color-accent);">✏️ Редактирование тайтла</h3>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Название (рус.)</label>
@@ -1023,7 +1072,6 @@
                             <input type="text" id="editNameEn">
                         </div>
                     </div>
-                    
                     <div class="form-row">
                         <div class="form-group">
                             <label>Тип</label>
@@ -1046,27 +1094,22 @@
                             <input type="number" id="editRating" step="0.1" min="0" max="5">
                         </div>
                     </div>
-                    
                     <div class="form-group">
                         <label>Жанры (через запятую)</label>
                         <input type="text" id="editGenres">
                     </div>
-                    
                     <div class="form-group">
                         <label>Вертикальная обложка</label>
                         <input type="text" id="editImageVert">
                     </div>
-                    
                     <div class="form-group">
                         <label>Горизонтальная обложка</label>
                         <input type="text" id="editImageHoriz">
                     </div>
-                    
                     <div class="form-group">
                         <label>Описание</label>
                         <textarea id="editDescription"></textarea>
                     </div>
-                    
                     <div class="form-group">
                         <label style="display:flex; justify-content:space-between; align-items:center;">
                             <span>📺 Список серий</span>
@@ -1076,7 +1119,6 @@
                             <div class="episodes-empty">Загрузка...</div>
                         </div>
                     </div>
-                    
                     <div style="display:flex; gap:10px; margin-top:20px;">
                         <button class="save-btn" id="saveEditBtn" onclick="saveAdminEdit()">💾 Сохранить изменения</button>
                         <button class="cancel-btn" onclick="document.getElementById('adminEditPanel').classList.remove('active')">Отмена</button>
@@ -1085,11 +1127,32 @@
             `;
         }
 
+        // Формируем HTML с плеером и кнопкой полноэкранного режима
+        const playerHtml = `
+            <h2 style="color:var(--color-accent);">▶ Смотреть онлайн</h2>
+            <div class="player-wrapper" id="playerWrapper">
+                <div class="player-container" id="playerContainer">
+                    ${firstEpisode.url ? `
+                        <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
+                    ` : `
+                        <div style="display:flex; align-items:center; justify-content:center; height:100%; color:var(--text-muted); background:var(--bg-player);">
+                            <p>Скоро появится</p>
+                        </div>
+                    `}
+                </div>
+                <div class="player-controls">
+                    <button class="fullscreen-btn" onclick="toggleFullscreen()">
+                        <span class="icon">⛶</span> На весь экран
+                    </button>
+                </div>
+            </div>
+        `;
+
         content.innerHTML = `
             <div class="anime-header">
-                <img src="${posterImage}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
+                <img src="${posterImage}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/d4e8ff/4a90d9?text=${title.name}'">
                 <div class="anime-info">
-                    <h1 class="anime-title" style="color:#d000ff;">
+                    <h1 class="anime-title">
                         ${title.name}
                         ${avgRatingHtml}
                     </h1>
@@ -1099,30 +1162,16 @@
                         <span class="anime-tag">${title.episodes || '?'} серий</span>
                         <span class="anime-tag">⭐ ${title.rating || '4.5'}</span>
                     </div>
-                    <p style="color:#fff;"><strong style="color:#d000ff;">Жанры:</strong> ${title.genres?.join(', ') || 'Не указаны'}</p>
-                    <div class="anime-description" style="color:#ccc;">${title.description || 'Описание отсутствует'}</div>
+                    <p style="color:var(--text-primary);"><strong style="color:var(--color-accent);">Жанры:</strong> ${title.genres?.join(', ') || 'Не указаны'}</p>
+                    <div class="anime-description">${title.description || 'Описание отсутствует'}</div>
                     ${adminHtml}
                 </div>
             </div>
             
-            <h2 style="color:#d000ff;">▶ Смотреть онлайн</h2>
-            <div id="playerContainer">
-                <div class="player-wrapper" id="playerWrapper">
-                    ${firstEpisode.url ? `
-                        <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
-                        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Полноэкранный режим">⛶</button>
-                    ` : `
-                        <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
-                            <p>Скоро появится</p>
-                        </div>
-                    `}
-                </div>
-            </div>
+            ${playerHtml}
             
             ${episodesHtml}
-            
             ${charactersHtml}
-            
             <div id="comments-container"></div>
         `;
 
@@ -1131,12 +1180,11 @@
         setTimeout(setupEpisodesAutoSave, 100);
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ =====
-
     onAuthStateChangedListener(async (user) => {
         currentUser = user;
         updateAuthButton(user);
         await updateDubInLink(user);
+        await updateAdminLink(user);
         if (user) {
             const role = await getUserRole(user.uid);
             isAdmin = role === 'admin';
@@ -1151,12 +1199,38 @@
         currentUser = user;
         updateAuthButton(user);
         await updateDubInLink(user);
+        await updateAdminLink(user);
         if (user) {
             const role = await getUserRole(user.uid);
             isAdmin = role === 'admin';
         }
         await loadTitle();
     });
+</script>
+
+<script>
+    function toggleTheme() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.innerHTML = newTheme === 'dark' ? '🌙' : '☀️';
+        }
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const btn = document.getElementById('themeToggle');
+        if (btn) {
+            btn.innerHTML = savedTheme === 'dark' ? '🌙' : '☀️';
+        }
+    }
+
+    loadTheme();
 </script>
 
 </body>
