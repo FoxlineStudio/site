@@ -101,6 +101,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 14px;
         }
         .action-btn.primary {
             background: linear-gradient(135deg, #6d076d, #3a0035);
@@ -132,6 +133,13 @@
             border: 2px solid #4CAF50;
         }
         .action-btn.subscribed:hover {
+            background: #2a4a2a;
+        }
+        .action-btn.success {
+            background: #1a3a1a;
+            color: #4CAF50;
+        }
+        .action-btn.success:hover {
             background: #2a4a2a;
         }
 
@@ -196,9 +204,39 @@
             font-size: 14px;
             box-sizing: border-box;
         }
-        .admin-panel .form-group input:focus {
+        .admin-panel .form-group input:focus,
+        .admin-panel .form-group select:focus {
             border-color: #d000ff;
             outline: none;
+        }
+        .admin-panel .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-panel .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .admin-panel .search-btn {
+            padding: 8px 20px;
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .admin-panel .search-btn:hover {
+            background: #8a0a8a;
+        }
+        .admin-panel .role-select {
+            padding: 6px 12px;
+            border-radius: 15px;
+            border: 1px solid #3a0035;
+            background: #1a001a;
+            color: #fff;
         }
 
         .user-search-result {
@@ -224,16 +262,14 @@
         .user-search-result .user-name {
             color: #d000ff;
         }
-        .user-search-result .user-role {
-            font-size: 12px;
+        .user-search-result .user-email {
             color: #666;
+            font-size: 12px;
         }
-        .user-search-result .role-select {
-            padding: 4px 12px;
-            border-radius: 15px;
-            border: 1px solid #3a0035;
-            background: #1a001a;
-            color: #fff;
+        .user-search-result .user-current-role {
+            font-size: 12px;
+            color: #aaa;
+            margin: 0 10px;
         }
 
         .modal-overlay {
@@ -347,6 +383,15 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
         }
+        .admin-only-badge {
+            display: inline-block;
+            background: #d000ff;
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
 
         @media (max-width: 768px) {
             .profile-header {
@@ -355,6 +400,9 @@
             }
             .profile-stats {
                 justify-content: center;
+            }
+            .admin-panel .form-row {
+                flex-direction: column;
             }
         }
     </style>
@@ -406,13 +454,12 @@
         updateUserProfile,
         updateUserRole,
         getAllUsers,
-        isAdmin,
         toggleSubscribe,
         isSubscribed,
         getSubscribersCount,
-        ACHIEVEMENTS,
         addCustomAchievement,
-        logoutUser
+        logoutUser,
+        isAdmin
     } from './firebase-config.js';
 
     let currentUser = null;
@@ -420,10 +467,12 @@
     let viewedUserData = null;
     let viewedUserId = null;
     let isAdminUser = false;
-    let isSubscribedToView = false;
+    let isOwnProfile = true;
+    let searchResults = [];
 
     const urlParams = new URLSearchParams(window.location.search);
     const viewedId = urlParams.get('uid');
+    const viewedEmail = urlParams.get('email');
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -460,7 +509,7 @@
             body.innerHTML = users.map(uid => `
                 <a href="profile.html?uid=${uid}" class="user-search-result" style="text-decoration:none;">
                     <div class="user-info">
-                        <img src="${currentUserData?.photoURL || 'https://via.placeholder.com/32/3a0035/fff?text=?'}" class="user-avatar-small" onerror="this.src='https://via.placeholder.com/32/3a0035/fff?text=?'">
+                        <img src="https://via.placeholder.com/32/3a0035/fff?text=?" class="user-avatar-small">
                         <span class="user-name">${uid}</span>
                     </div>
                     <span style="color:#666;">→</span>
@@ -481,9 +530,164 @@
         if (e.target === this) closeUsersModal();
     });
 
+    // ===== АДМИН-ФУНКЦИИ =====
+
+    // Поиск пользователя по email
+    window.searchUserByEmail = async function() {
+        const input = document.getElementById('adminSearchEmail');
+        const email = input.value.trim();
+        const resultsContainer = document.getElementById('adminSearchResults');
+        
+        if (!email) {
+            resultsContainer.innerHTML = '<p style="color:#666;">Введите email для поиска</p>';
+            return;
+        }
+        
+        resultsContainer.innerHTML = '<p style="color:#aaa;">⏳ Поиск...</p>';
+        
+        const result = await getUserByEmail(email);
+        if (result.success) {
+            const user = result.data;
+            searchResults = [user];
+            const roleNames = {
+                'admin': 'Администратор',
+                'dubber': 'Даббер',
+                'user': 'Пользователь'
+            };
+            resultsContainer.innerHTML = `
+                <div class="user-search-result">
+                    <div class="user-info">
+                        <img src="${user.photoURL || 'https://via.placeholder.com/32/3a0035/fff?text=?'}" class="user-avatar-small" onerror="this.src='https://via.placeholder.com/32/3a0035/fff?text=?'">
+                        <div>
+                            <div class="user-name">${user.displayName || 'Без имени'}</div>
+                            <div class="user-email">${user.email}</div>
+                        </div>
+                        <span class="user-current-role">Текущая роль: <strong>${roleNames[user.role] || user.role}</strong></span>
+                    </div>
+                    <div>
+                        <select class="role-select" id="roleSelect_${user.id}" onchange="applyRole('${user.id}')">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                            <option value="dubber" ${user.role === 'dubber' ? 'selected' : ''}>Даббер</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Администратор</option>
+                        </select>
+                        <button class="action-btn primary" style="padding:4px 12px; font-size:12px;" onclick="applyRole('${user.id}')">✅ Применить</button>
+                    </div>
+                </div>
+                <div style="margin-top:10px;">
+                    <h4 style="color:#aaa; font-size:14px;">🎯 Выдать достижение</h4>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input type="text" id="customAchName_${user.id}" placeholder="Название" style="flex:1; padding:6px 12px; border-radius:8px; border:2px solid #3a0035; background:rgba(58,0,53,0.2); color:#fff;">
+                        <input type="text" id="customAchIcon_${user.id}" placeholder="Иконка" style="width:60px; padding:6px 12px; border-radius:8px; border:2px solid #3a0035; background:rgba(58,0,53,0.2); color:#fff;">
+                        <button class="action-btn success" style="padding:4px 16px; font-size:12px;" onclick="giveCustomAchievement('${user.id}')">🏅 Выдать</button>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultsContainer.innerHTML = `<p style="color:#ff6b6b;">❌ ${result.error}</p>`;
+        }
+    };
+
+    // Применить роль
+    window.applyRole = async function(userId) {
+        const select = document.getElementById(`roleSelect_${userId}`);
+        if (!select) return;
+        const newRole = select.value;
+        
+        if (!confirm(`Изменить роль пользователя на "${newRole}"?`)) return;
+        
+        const result = await updateUserRole(userId, newRole);
+        if (result.success) {
+            alert('✅ Роль обновлена!');
+            // Обновляем результаты поиска
+            await searchUserByEmail();
+            // Если это профиль текущего пользователя, обновляем
+            if (userId === currentUser?.uid) {
+                await loadProfile();
+            }
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
+    // Выдать кастомное достижение
+    window.giveCustomAchievement = async function(userId) {
+        const nameInput = document.getElementById(`customAchName_${userId}`);
+        const iconInput = document.getElementById(`customAchIcon_${userId}`);
+        
+        const name = nameInput?.value?.trim();
+        const icon = iconInput?.value?.trim() || '🏅';
+        
+        if (!name) {
+            alert('Введите название достижения');
+            return;
+        }
+        
+        if (!confirm(`Выдать достижение "${name}" пользователю?`)) return;
+        
+        const achievement = {
+            id: 'custom_' + Date.now(),
+            name: name,
+            icon: icon,
+            description: 'Кастомное достижение'
+        };
+        
+        const result = await addCustomAchievement(userId, achievement);
+        if (result.success) {
+            alert('✅ Достижение выдано!');
+            nameInput.value = '';
+            iconInput.value = '';
+            // Обновляем результаты поиска
+            await searchUserByEmail();
+            // Если это профиль текущего пользователя, обновляем
+            if (userId === currentUser?.uid) {
+                await loadProfile();
+            }
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
     // ===== ФУНКЦИИ ПРОФИЛЯ =====
 
-    async function renderProfile(user, userData, isOwnProfile) {
+    window.handleSubscribe = async function() {
+        if (!currentUser) {
+            alert('Войдите, чтобы подписаться');
+            return;
+        }
+        if (currentUser.uid === viewedUserId) {
+            alert('Нельзя подписаться на себя');
+            return;
+        }
+        const result = await toggleSubscribe(currentUser.uid, viewedUserId);
+        if (result.success) {
+            await loadProfile();
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    };
+
+    window.handleEditProfile = function() {
+        const name = prompt('Новое имя:', currentUserData?.displayName || '');
+        if (name && name.trim()) {
+            updateUserProfile(currentUser.uid, { displayName: name.trim() });
+            setTimeout(loadProfile, 500);
+        }
+        const avatar = prompt('Ссылка на аватарку:', currentUserData?.photoURL || '');
+        if (avatar !== null) {
+            updateUserProfile(currentUser.uid, { photoURL: avatar.trim() });
+            setTimeout(loadProfile, 500);
+        }
+    };
+
+    window.handleLogout = async function() {
+        if (!confirm('Вы уверены, что хотите выйти?')) return;
+        const result = await logoutUser();
+        if (result.success) {
+            window.location.href = 'index.html';
+        }
+    };
+
+    async function renderProfile(user, userData, isOwn) {
         const container = document.getElementById('profileContent');
         
         const avatarUrl = userData.photoURL || '';
@@ -507,12 +711,10 @@
             'user': 'role-user'
         };
 
-        const isAdminViewer = isAdminUser;
-
-        // Кнопка подписки (только если не свой профиль)
+        // Кнопка подписки
         let subscribeButton = '';
-        if (!isOwnProfile) {
-            const isSub = await isSubscribed(currentUser?.uid, viewedUserId);
+        if (!isOwn && currentUser) {
+            const isSub = await isSubscribed(currentUser.uid, viewedUserId);
             subscribeButton = `
                 <button class="action-btn ${isSub ? 'subscribed' : 'outline'}" onclick="handleSubscribe()">
                     ${isSub ? '✅ Подписан' : '➕ Подписаться'}
@@ -520,29 +722,50 @@
             `;
         }
 
-        // Админ-панель (только для админов)
+        // Админ-панель (только для админов на странице другого пользователя)
         let adminPanel = '';
-        if (isAdminViewer && !isOwnProfile) {
+        if (isAdminUser && !isOwn) {
             adminPanel = `
                 <div class="admin-panel">
                     <h3>👑 Управление пользователем</h3>
-                    <div class="form-group">
-                        <label>Роль</label>
-                        <select id="adminRoleSelect" onchange="handleRoleChange()">
-                            <option value="user" ${role === 'user' ? 'selected' : ''}>Пользователь</option>
-                            <option value="dubber" ${role === 'dubber' ? 'selected' : ''}>Даббер</option>
-                            <option value="admin" ${role === 'admin' ? 'selected' : ''}>Администратор</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Выдать кастомное достижение</label>
-                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                            <input type="text" id="customAchievementName" placeholder="Название" style="flex:1;">
-                            <input type="text" id="customAchievementIcon" placeholder="Иконка" style="width:60px;">
-                            <button class="action-btn primary" onclick="handleCustomAchievement()">➕ Выдать</button>
+                    <div style="margin-bottom:15px;">
+                        <p style="color:#aaa; font-size:14px;">Текущая роль: <strong style="color:#d000ff;">${roleNames[role] || role}</strong></p>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <select id="adminRoleSelect" style="padding:8px 16px; border-radius:15px; border:2px solid #3a0035; background:#1a001a; color:#fff; font-size:14px;">
+                                <option value="user" ${role === 'user' ? 'selected' : ''}>👤 Пользователь</option>
+                                <option value="dubber" ${role === 'dubber' ? 'selected' : ''}>🎙️ Даббер</option>
+                                <option value="admin" ${role === 'admin' ? 'selected' : ''}>👑 Администратор</option>
+                            </select>
+                            <button class="action-btn primary" onclick="handleRoleChange()">💾 Применить роль</button>
                         </div>
                     </div>
-                    <button class="action-btn danger" onclick="handleDeleteUser()">🗑️ Удалить пользователя</button>
+                    <hr style="border-color:#3a0035; margin:15px 0;">
+                    <div>
+                        <p style="color:#aaa; font-size:14px;">🏅 Выдать кастомное достижение</p>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <input type="text" id="customAchievementName" placeholder="Название" style="flex:1; padding:8px 14px; border-radius:8px; border:2px solid #3a0035; background:rgba(58,0,53,0.2); color:#fff; min-width:150px;">
+                            <input type="text" id="customAchievementIcon" placeholder="Иконка" style="width:60px; padding:8px 14px; border-radius:8px; border:2px solid #3a0035; background:rgba(58,0,53,0.2); color:#fff;">
+                            <button class="action-btn success" onclick="handleCustomAchievement()">🏅 Выдать</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Админ-панель на своём профиле (поиск пользователей)
+        let adminOwnPanel = '';
+        if (isAdminUser && isOwn) {
+            adminOwnPanel = `
+                <div class="admin-panel">
+                    <h3>👑 Админ-панель</h3>
+                    <p style="color:#aaa; font-size:14px; margin-bottom:15px;">Управление пользователями по email</p>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <input type="email" id="adminSearchEmail" placeholder="Введите email пользователя" style="flex:1; padding:10px 16px; border-radius:10px; border:2px solid #3a0035; background:rgba(58,0,53,0.2); color:#fff; font-size:14px; min-width:200px;">
+                        <button class="search-btn" onclick="searchUserByEmail()">🔍 Найти</button>
+                    </div>
+                    <div id="adminSearchResults" style="margin-top:15px;">
+                        <p style="color:#666;">Введите email для поиска пользователя</p>
+                    </div>
                 </div>
             `;
         }
@@ -566,7 +789,6 @@
             `;
         }
 
-        // Статистика (кликабельная для подписчиков/подписок)
         const subscribersCount = subscribers.length;
         const subscriptionsCount = subscriptions.length;
 
@@ -578,12 +800,12 @@
                          onerror="this.src='https://via.placeholder.com/120/3a0035/d000ff?text=?'">
                     <div class="profile-info">
                         <h1 class="profile-name">${displayName}</h1>
-                        <div class="profile-email">${isOwnProfile ? email : ''}</div>
+                        <div class="profile-email">${isOwn ? email : ''}</div>
                         <span class="profile-role ${roleClass[role] || 'role-user'}">${roleNames[role] || 'Пользователь'}</span>
                         
                         <div class="profile-actions">
-                            ${isOwnProfile ? `
-                                <button class="action-btn primary" onclick="handleEditProfile()">✏️ Редактировать профиль</button>
+                            ${isOwn ? `
+                                <button class="action-btn primary" onclick="handleEditProfile()">✏️ Редактировать</button>
                                 <button class="action-btn danger" onclick="handleLogout()">🚪 Выйти</button>
                             ` : subscribeButton}
                         </div>
@@ -611,73 +833,55 @@
 
                 ${achievementsHtml}
                 ${adminPanel}
+                ${adminOwnPanel}
             </div>
         `;
     }
 
     // ===== ОБРАБОТЧИКИ =====
 
-    window.handleSubscribe = async function() {
-        if (!currentUser) {
-            alert('Войдите, чтобы подписаться');
-            return;
-        }
-        const result = await toggleSubscribe(currentUser.uid, viewedUserId);
-        if (result.success) {
-            await loadProfile();
-        } else {
-            alert('Ошибка: ' + result.error);
-        }
-    };
-
-    window.handleEditProfile = function() {
-        const name = prompt('Новое имя:', currentUserData?.displayName || '');
-        if (name && name.trim()) {
-            updateUserProfile(currentUser.uid, { displayName: name.trim() });
-            loadProfile();
-        }
-        const avatar = prompt('Ссылка на аватарку:', currentUserData?.photoURL || '');
-        if (avatar !== null) {
-            updateUserProfile(currentUser.uid, { photoURL: avatar.trim() });
-            loadProfile();
-        }
-    };
-
-    window.handleRoleChange = function() {
+    window.handleRoleChange = async function() {
         const select = document.getElementById('adminRoleSelect');
         const newRole = select.value;
-        if (confirm(`Изменить роль пользователя на "${newRole}"?`)) {
-            updateUserRole(viewedUserId, newRole);
-            loadProfile();
+        if (!confirm(`Изменить роль пользователя на "${newRole}"?`)) return;
+        
+        const result = await updateUserRole(viewedUserId, newRole);
+        if (result.success) {
+            alert('✅ Роль обновлена!');
+            await loadProfile();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
         }
     };
 
-    window.handleCustomAchievement = function() {
-        const name = document.getElementById('customAchievementName').value.trim();
-        const icon = document.getElementById('customAchievementIcon').value.trim() || '🏅';
+    window.handleCustomAchievement = async function() {
+        const nameInput = document.getElementById('customAchievementName');
+        const iconInput = document.getElementById('customAchievementIcon');
+        const name = nameInput?.value?.trim();
+        const icon = iconInput?.value?.trim() || '🏅';
+        
         if (!name) {
             alert('Введите название достижения');
             return;
         }
-        if (confirm(`Выдать достижение "${name}" пользователю?`)) {
-            addCustomAchievement(viewedUserId, { id: 'custom_' + Date.now(), name, icon, description: 'Кастомное достижение' });
-            loadProfile();
-            document.getElementById('customAchievementName').value = '';
-            document.getElementById('customAchievementIcon').value = '';
-        }
-    };
-
-    window.handleDeleteUser = function() {
-        if (confirm('Удалить пользователя? Это действие необратимо!')) {
-            alert('Функция удаления пользователя пока не реализована');
-        }
-    };
-
-    window.handleLogout = async function() {
-        if (!confirm('Вы уверены, что хотите выйти?')) return;
-        const result = await logoutUser();
+        
+        if (!confirm(`Выдать достижение "${name}" пользователю?`)) return;
+        
+        const achievement = {
+            id: 'custom_' + Date.now(),
+            name: name,
+            icon: icon,
+            description: 'Кастомное достижение'
+        };
+        
+        const result = await addCustomAchievement(viewedUserId, achievement);
         if (result.success) {
-            window.location.href = 'index.html';
+            alert('✅ Достижение выдано!');
+            nameInput.value = '';
+            iconInput.value = '';
+            await loadProfile();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
         }
     };
 
@@ -690,7 +894,26 @@
         const user = getCurrentUser();
         currentUser = user;
         
-        if (!user && !viewedId) {
+        // Определяем, чей профиль смотрим
+        let targetUid = null;
+        let targetEmail = viewedEmail;
+        
+        if (viewedId) {
+            targetUid = viewedId;
+        } else if (viewedEmail) {
+            const result = await getUserByEmail(viewedEmail);
+            if (result.success) {
+                targetUid = result.data.id;
+                viewedUserData = result.data;
+            } else {
+                container.innerHTML = `<p style="color:#ff6b6b; text-align:center;">❌ Пользователь с email "${viewedEmail}" не найден</p>`;
+                return;
+            }
+        } else if (user) {
+            targetUid = user.uid;
+        }
+        
+        if (!targetUid) {
             container.innerHTML = `
                 <div class="auth-message">
                     <h2>🔒 Вы не авторизованы</h2>
@@ -702,15 +925,8 @@
             return;
         }
 
-        // Определяем, чей профиль смотрим
-        const targetUid = viewedId || user?.uid;
-        if (!targetUid) {
-            container.innerHTML = '<p style="color:#ff6b6b; text-align:center;">Пользователь не найден</p>';
-            return;
-        }
-
         viewedUserId = targetUid;
-        const isOwnProfile = user && user.uid === targetUid;
+        isOwnProfile = user && user.uid === targetUid;
 
         // Загружаем данные
         const result = await getUserData(targetUid);
@@ -726,8 +942,9 @@
 
         // Проверяем, админ ли текущий пользователь
         if (user) {
-            const roleResult = await getUserData(user.uid);
-            isAdminUser = roleResult.success && roleResult.data.role === 'admin';
+            isAdminUser = await isAdmin(user.uid);
+        } else {
+            isAdminUser = false;
         }
 
         await renderProfile(user, viewedUserData, isOwnProfile);
@@ -739,19 +956,7 @@
         currentUser = user;
         updateAuthButton(user);
         await updateDubInLink(user);
-        if (!user && !viewedId) {
-            const container = document.getElementById('profileContent');
-            container.innerHTML = `
-                <div class="auth-message">
-                    <h2>🔒 Вы не авторизованы</h2>
-                    <p>Войдите или зарегистрируйтесь, чтобы увидеть профиль</p>
-                    <br>
-                    <a href="login.html" class="auth-btn">🔑 Войти</a>
-                </div>
-            `;
-        } else {
-            await loadProfile();
-        }
+        await loadProfile();
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
