@@ -562,6 +562,19 @@ async function initializeData() {
         console.error('❌ Ошибка загрузки начальных данных:', error);
     }
 }
+// Добавьте эту функцию в firebase-config.js
+
+async function getUserRole(uid) {
+    try {
+        const result = await getUserData(uid);
+        if (result.success) {
+            return result.data.role || 'user';
+        }
+        return 'user';
+    } catch (error) {
+        return 'user';
+    }
+}
 
 // ============================================================
 // ========== ЭКСПОРТ ==========
@@ -602,6 +615,7 @@ export {
     addRole,
     updateRole,
     deleteRole,
+    getUserRole,
     // Материалы
     getDubMaterials,
     updateDubMaterials,
