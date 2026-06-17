@@ -23,9 +23,7 @@ import {
     where,
     orderBy,
     serverTimestamp,
-    writeBatch,
-    arrayUnion,
-    arrayRemove
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ============================================================
@@ -57,12 +55,11 @@ async function registerUser(email, password, displayName) {
         const user = userCredential.user;
         await updateProfile(user, { displayName: displayName });
         
-        // Создаём пользователя в Firestore с ролью 'user'
         await setDoc(doc(db, "users", user.uid), {
             displayName: displayName,
             email: email,
             photoURL: '',
-            role: 'user', // user, dubber, admin
+            role: 'user',
             createdAt: serverTimestamp()
         });
         
@@ -138,6 +135,18 @@ async function getUserData(uid) {
     }
 }
 
+async function getUserRole(uid) {
+    try {
+        const result = await getUserData(uid);
+        if (result.success) {
+            return result.data.role || 'user';
+        }
+        return 'user';
+    } catch (error) {
+        return 'user';
+    }
+}
+
 async function updateUserProfile(uid, data) {
     try {
         const docRef = doc(db, "users", uid);
@@ -180,19 +189,13 @@ async function getAllUsers() {
 }
 
 async function isAdmin(uid) {
-    const result = await getUserData(uid);
-    if (result.success) {
-        return result.data.role === 'admin';
-    }
-    return false;
+    const role = await getUserRole(uid);
+    return role === 'admin';
 }
 
 async function isDubber(uid) {
-    const result = await getUserData(uid);
-    if (result.success) {
-        return result.data.role === 'dubber' || result.data.role === 'admin';
-    }
-    return false;
+    const role = await getUserRole(uid);
+    return role === 'dubber' || role === 'admin';
 }
 
 // ============================================================
@@ -423,7 +426,7 @@ async function addDubMaterial(titleId, materialType, item) {
             existing = docSnap.data();
         }
         existing[materialType].push(item);
-        await setDoc(docRef, existing, { merge: true });
+        await setDoc(docRef, existing);
         return { success: true };
     } catch (error) {
         return { success: false, error: error.message };
@@ -513,7 +516,6 @@ async function deleteComment(commentId) {
 
 async function initializeData() {
     try {
-        // Проверяем, есть ли уже тайтлы
         const titlesResult = await getTitles();
         if (titlesResult.success && titlesResult.titles.length > 0) {
             console.log('📊 Данные уже существуют в Firestore');
@@ -523,7 +525,6 @@ async function initializeData() {
         console.log('📝 Загрузка начальных данных в Firestore...');
         const batch = writeBatch(db);
 
-        // Загружаем тайтлы из window.titlesDatabase
         if (window.titlesDatabase && window.titlesDatabase.length > 0) {
             for (const title of window.titlesDatabase) {
                 const docRef = doc(db, "titles", title.id || title.name);
@@ -534,7 +535,6 @@ async function initializeData() {
             }
         }
 
-        // Загружаем дабберов
         if (window.voicesDatabase && window.voicesDatabase.length > 0) {
             for (const voice of window.voicesDatabase) {
                 const docRef = doc(db, "voices", voice.id || voice.name);
@@ -545,7 +545,6 @@ async function initializeData() {
             }
         }
 
-        // Загружаем роли
         if (window.rolesDatabase && window.rolesDatabase.length > 0) {
             for (const role of window.rolesDatabase) {
                 const docRef = doc(db, "roles", role.id || `${role.titleId}_${role.voiceId}`);
@@ -562,19 +561,7 @@ async function initializeData() {
         console.error('❌ Ошибка загрузки начальных данных:', error);
     }
 }
-// Добавьте эту функцию в firebase-config.js
 
-async function getUserRole(uid) {
-    try {
-        const result = await getUserData(uid);
-        if (result.success) {
-            return result.data.role || 'user';
-        }
-        return 'user';
-    } catch (error) {
-        return 'user';
-    }
-}
 // ============================================================
 // ========== ЭКСПОРТ ==========
 // ============================================================
@@ -582,49 +569,41 @@ async function getUserRole(uid) {
 export {
     auth,
     db,
-    // Авторизация
     registerUser,
     loginUser,
     logoutUser,
     getCurrentUser,
     onAuthStateChangedListener,
     resetPassword,
-    // Пользователи
     getUserData,
+    getUserRole,
     updateUserProfile,
     updateUserRole,
     getAllUsers,
     isAdmin,
     isDubber,
-    // Тайтлы
     getTitles,
     getTitleById,
     addTitle,
     updateTitle,
     deleteTitle,
-    // Дабберы
     getVoices,
     getVoiceById,
     addVoice,
     updateVoice,
     deleteVoice,
-    // Роли
     getRoles,
     getRolesByTitleId,
     addRole,
     updateRole,
     deleteRole,
-    getUserRole,
-    // Материалы
     getDubMaterials,
     updateDubMaterials,
     addDubMaterial,
     removeDubMaterial,
-    // Комментарии
     addComment,
     getComments,
     deleteComment,
-    // Инициализация
     initializeData
 };
 

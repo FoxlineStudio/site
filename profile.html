@@ -86,6 +86,25 @@
             font-size: 14px;
             margin-top: 20px;
         }
+        .profile-info .role-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .role-admin {
+            background: #d000ff;
+            color: #fff;
+        }
+        .role-dubber {
+            background: #6d076d;
+            color: #fff;
+        }
+        .role-user {
+            background: #3a0035;
+            color: #aaa;
+        }
         .logout-btn {
             padding: 14px 40px;
             font-size: 18px;
@@ -150,6 +169,21 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
         }
+        .refresh-role-btn {
+            background: transparent;
+            border: 1px solid #6d076d;
+            color: #aaa;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+        .refresh-role-btn:hover {
+            border-color: #d000ff;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -162,66 +196,11 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
-
-<script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserData, updateUserProfile, logoutUser, getUserRole } from './firebase-config.js';
-
-    // ... остальные функции ...
-
-    async function updateDubInLink(user) {
-        const link = document.getElementById('dubInLink');
-        if (!link) return;
-        
-        if (user) {
-            const role = await getUserRole(user.uid);
-            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
-        } else {
-            link.style.display = 'none';
-        }
-    }
-
-    // В renderProfile добавьте отображение роли
-    function renderProfile(data, user) {
-        // ... остальной код ...
-        
-        const roleNames = {
-            'admin': '👑 Администратор',
-            'dubber': '🎙️ Даббер',
-            'user': '👤 Пользователь'
-        };
-        const roleDisplay = roleNames[data.role] || '👤 Пользователь';
-        
-        // Добавьте в профиль:
-        // <p>🎯 Роль: ${roleDisplay}</p>
-    }
-
-    onAuthStateChangedListener(async (user) => {
-        updateAuthButton(user);
-        await updateDubInLink(user);
-        if (user) {
-            await loadProfile();
-        } else {
-            renderNotAuthorized();
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', async () => {
-        const user = getCurrentUser();
-        updateAuthButton(user);
-        await updateDubInLink(user);
-        if (user) {
-            await loadProfile();
-        } else {
-            renderNotAuthorized();
-        }
-    });
-</script>
 
 <div class="container">
     <div class="header">
@@ -241,6 +220,7 @@
         getCurrentUser, 
         onAuthStateChangedListener,
         getUserData,
+        getUserRole,
         updateUserProfile,
         logoutUser
     } from './firebase-config.js';
@@ -260,6 +240,18 @@
         }
     }
 
+    async function updateDubInLink(user) {
+        const link = document.getElementById('dubInLink');
+        if (!link) return;
+        
+        if (user) {
+            const role = await getUserRole(user.uid);
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
     function showMessage(type, text) {
         const container = document.getElementById('profileContent');
         const existing = container.querySelector('.message');
@@ -272,7 +264,6 @@
                          'ℹ️ ' + text;
         div.style.display = 'block';
         
-        // Вставляем после заголовка
         const title = container.querySelector('h2');
         if (title) {
             title.after(div);
@@ -345,11 +336,49 @@
         }
     };
 
+    window.refreshRole = async function() {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const roleEl = document.getElementById('roleDisplay');
+        if (roleEl) {
+            roleEl.textContent = '⏳ Обновление...';
+        }
+        
+        const role = await getUserRole(user.uid);
+        currentUserData.role = role;
+        
+        // Обновляем отображение роли
+        const roleDisplay = document.getElementById('roleDisplay');
+        if (roleDisplay) {
+            const roleNames = {
+                'admin': '👑 Администратор',
+                'dubber': '🎙️ Даббер',
+                'user': '👤 Пользователь'
+            };
+            roleDisplay.textContent = roleNames[role] || '👤 Пользователь';
+            roleDisplay.className = `role-badge role-${role}`;
+        }
+        
+        // Обновляем ссылку DUB-in
+        await updateDubInLink(user);
+        
+        showMessage('success', 'Роль обновлена: ' + (roleNames[role] || role));
+    };
+
     function renderProfile(data, user) {
         const container = document.getElementById('profileContent');
         const avatarUrl = data.photoURL || '';
         const displayName = data.displayName || 'Пользователь';
         const email = user?.email || data.email || 'Не указан';
+        
+        const roleNames = {
+            'admin': '👑 Администратор',
+            'dubber': '🎙️ Даббер',
+            'user': '👤 Пользователь'
+        };
+        const roleDisplay = roleNames[data.role] || '👤 Пользователь';
+        const roleClass = data.role || 'user';
         
         const avatarHtml = avatarUrl ? 
             `<img src="${avatarUrl}" class="profile-avatar" onerror="this.src='https://via.placeholder.com/150/3a0035/d000ff?text=?'">` :
@@ -366,6 +395,12 @@
             <h2 class="title" style="text-align:center;">👤 Профиль</h2>
             
             ${avatarHtml}
+            
+            <div style="text-align:center; margin-bottom:15px;">
+                <span class="role-badge role-${roleClass}">${roleDisplay}</span>
+                <br>
+                <button class="refresh-role-btn" onclick="refreshRole()">🔄 Обновить роль</button>
+            </div>
             
             <div class="profile-field">
                 <label>👤 Имя</label>
@@ -389,6 +424,7 @@
             <br>
             <button class="logout-btn" onclick="handleLogout()">🚪 Выйти</button>
             <br><br>
+            <a href="index.html" style="color:#6d076d; text-decoration:none;">🏠 На главную</a>
         `;
         
         // Превью аватарки при вводе
@@ -440,10 +476,16 @@
         
         container.innerHTML = '<div class="loading" style="text-align:center; padding:40px; color:#aaa;">⏳ Загрузка профиля...</div>';
         
+        // Загружаем данные и роль
         const result = await getUserData(user.uid);
         if (result.success) {
             currentUserData = result.data;
+            // Убеждаемся, что роль есть
+            if (!currentUserData.role) {
+                currentUserData.role = 'user';
+            }
             renderProfile(currentUserData, user);
+            await updateDubInLink(user);
         } else {
             // Если данные не найдены — создаём их
             try {
@@ -454,11 +496,13 @@
                     displayName: user.displayName || user.email || 'Пользователь',
                     email: user.email,
                     photoURL: user.photoURL || '',
+                    role: 'user',
                     createdAt: serverTimestamp()
                 };
                 await setDoc(doc(db, "users", user.uid), newData);
                 currentUserData = newData;
                 renderProfile(currentUserData, user);
+                await updateDubInLink(user);
             } catch (error) {
                 container.innerHTML = `
                     <div style="text-align:center; padding:40px;">
@@ -475,17 +519,27 @@
     }
 
     // Следим за состоянием авторизации
-    onAuthStateChangedListener((user) => {
+    onAuthStateChangedListener(async (user) => {
         updateAuthButton(user);
+        await updateDubInLink(user);
         if (user) {
-            loadProfile();
+            await loadProfile();
         } else {
             renderNotAuthorized();
         }
     });
 
     // Первичная загрузка
-    loadProfile();
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        updateAuthButton(user);
+        await updateDubInLink(user);
+        if (user) {
+            await loadProfile();
+        } else {
+            renderNotAuthorized();
+        }
+    });
 </script>
 
 </body>

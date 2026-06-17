@@ -31,15 +31,6 @@
         .featured-image:hover {
             transform: scale(1.05);
         }
-        .admin-badge {
-            display: inline-block;
-            background: #d000ff;
-            color: #fff;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            margin-left: 8px;
-        }
     </style>
 </head>
 <body>
@@ -52,55 +43,11 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
-
-<script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
-
-    function updateAuthButton(user) {
-        const btn = document.getElementById('authBtn');
-        if (user) {
-            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
-            btn.href = 'profile.html';
-        } else {
-            btn.textContent = '🔑 Вход';
-            btn.href = 'login.html';
-        }
-    }
-
-    async function updateDubInLink(user) {
-        const link = document.getElementById('dubInLink');
-        if (!link) return;
-        
-        if (user) {
-            const role = await getUserRole(user.uid);
-            if (role === 'dubber' || role === 'admin') {
-                link.style.display = 'inline-flex';
-            } else {
-                link.style.display = 'none';
-            }
-        } else {
-            link.style.display = 'none';
-        }
-    }
-
-    onAuthStateChangedListener(async (user) => {
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-
-    // При загрузке страницы
-    document.addEventListener('DOMContentLoaded', async () => {
-        const user = getCurrentUser();
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-</script>
 
 <div class="container">
     <div class="header">
@@ -140,7 +87,7 @@
         <a href="index.html" style="color: #6d076d;">Главная</a>
         <a href="titles.html" style="color: #6d076d;">Тайтлы</a>
         <a href="sostav.html" style="color: #6d076d;">Состав</a>
-        <a href="dub-in.html" style="color: #6d076d;">DUB-in</a>
+        <a href="dub-in.html" style="color: #6d076d; display:none;" id="dubInFooter">DUB-in</a>
         <a href="privacy.html" style="color: #6d076d;">Политика</a>
     </div>
     <p>© 2026 Foxline Studio. Все права защищены.</p>
@@ -151,7 +98,7 @@
         getCurrentUser, 
         onAuthStateChangedListener,
         getTitles,
-        isAdmin,
+        getUserRole,
         initializeData
     } from './firebase-config.js';
 
@@ -171,6 +118,21 @@
         }
     }
 
+    async function updateDubInLink(user) {
+        const headerLink = document.getElementById('dubInLink');
+        const footerLink = document.getElementById('dubInFooter');
+        
+        if (user) {
+            const role = await getUserRole(user.uid);
+            const show = (role === 'dubber' || role === 'admin');
+            if (headerLink) headerLink.style.display = show ? 'inline-flex' : 'none';
+            if (footerLink) footerLink.style.display = show ? 'inline' : 'none';
+        } else {
+            if (headerLink) headerLink.style.display = 'none';
+            if (footerLink) footerLink.style.display = 'none';
+        }
+    }
+
     async function loadFeaturedTitles() {
         const container = document.getElementById('featured-titles');
         const result = await getTitles();
@@ -178,7 +140,7 @@
         if (result.success && result.titles.length > 0) {
             const titles = result.titles.slice(0, 3);
             container.innerHTML = titles.map(title => {
-                const image = title.imageHorizontal || title.image;
+                const image = title.imageVertical || title.imageHorizontal || title.image;
                 return `
                     <div class='content-box2'>
                         <div class="featured-item">
@@ -196,13 +158,16 @@
         }
     }
 
-    onAuthStateChangedListener((user) => {
+    onAuthStateChangedListener(async (user) => {
         updateAuthButton(user);
+        await updateDubInLink(user);
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadFeaturedTitles();
-        updateAuthButton(getCurrentUser());
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        updateAuthButton(user);
+        await updateDubInLink(user);
+        await loadFeaturedTitles();
     });
 </script>
 
