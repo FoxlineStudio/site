@@ -36,6 +36,7 @@
 
         .team-card-wrapper {
             position: relative;
+            display: inline-block;
         }
         .team-card-wrapper .admin-actions {
             position: absolute;
@@ -45,6 +46,7 @@
             gap: 5px;
             opacity: 0;
             transition: opacity 0.3s;
+            z-index: 10;
         }
         .team-card-wrapper:hover .admin-actions {
             opacity: 1;
@@ -71,6 +73,59 @@
         }
         .team-card-wrapper .admin-actions .delete-btn:hover {
             background: #8a0000;
+        }
+
+        /* Стили для карточек команды */
+        .team-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .team-card {
+            background: rgb(19, 0, 20);
+            border-radius: 20px;
+            padding: 20px 15px;
+            width: 210px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(82, 0, 56, 0.468);
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #3a0035;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            border-color: #6d076d;
+            box-shadow: 0 10px 30px rgba(208, 0, 255, 0.2);
+        }
+
+        .team-card-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #70006b;
+            margin-bottom: 15px;
+        }
+
+        .team-card-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d000ff;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .team-card-status {
+            font-size: 13px;
+            color: #888;
+            margin-top: 2px;
         }
 
         .modal-overlay {
@@ -176,8 +231,33 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
         }
+        .modal-content .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-        /* ===== НОВЫЙ СТИЛЬ ДЛЯ СОЦСЕТЕЙ ===== */
+        .stat-box {
+            flex: 1;
+            min-width: 120px;
+            background: rgb(52, 0, 55);
+            padding: 18px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d000ff;
+        }
+        .stat-label {
+            font-size: 16px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* ===== СОЦСЕТИ В МОДАЛКЕ ===== */
         .socials-editor {
             margin-top: 10px;
         }
@@ -263,6 +343,17 @@
             .admin-toolbar {
                 justify-content: center;
             }
+            .team-card {
+                width: 160px;
+                padding: 15px 10px;
+            }
+            .team-card-avatar {
+                width: 80px;
+                height: 80px;
+            }
+            .team-card-name {
+                font-size: 16px;
+            }
             .social-edit-item {
                 flex-direction: column;
                 align-items: stretch;
@@ -322,21 +413,21 @@
             </div>
         </div>
 
-        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+        <h2 style="color: #d000ff; border-left: 5px solid #6d076d; padding-left: 15px; margin-top: 30px;">
             🎙️ Дабберы
         </h2>
         <div id="dubberList" class="team-list"></div>
 
         <hr>
 
-        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+        <h2 style="color: #d000ff; border-left: 5px solid #6d076d; padding-left: 15px; margin-top: 30px;">
             🔧 Технический персонал
         </h2>
         <div id="techList" class="team-list"></div>
     </div>
 </div>
 
-<!-- Модальное окно для добавления/редактирования даббера -->
+<!-- Модальное окно -->
 <div class="modal-overlay" id="voiceModal">
     <div class="modal-content">
         <button class="modal-close" onclick="closeVoiceModal()">✕</button>
@@ -398,7 +489,6 @@
                 <textarea id="voiceBio" placeholder="Расскажите о даббере..."></textarea>
             </div>
             
-            <!-- ===== НОВЫЙ БЛОК СОЦСЕТЕЙ ===== -->
             <div class="form-group">
                 <label style="display:flex; justify-content:space-between; align-items:center;">
                     <span>🔗 Социальные сети</span>
@@ -467,12 +557,11 @@
         }
     }
 
-    // ===== ФУНКЦИИ УПРАВЛЕНИЯ СОЦСЕТЯМИ =====
+    // ===== ФУНКЦИИ СОЦСЕТЕЙ =====
 
     function renderSocialsEditor(socials) {
         const container = document.getElementById('socialsEditor');
         
-        // Преобразуем объект в массив для удобства
         let socialArray = [];
         if (socials && typeof socials === 'object' && !Array.isArray(socials)) {
             socialArray = Object.entries(socials).map(([type, value]) => ({ type, value }));
@@ -487,7 +576,6 @@
             return;
         }
         
-        // Доступные типы соцсетей
         const socialTypes = [
             { value: 'telegram', label: '📱 Telegram' },
             { value: 'vk', label: '📘 VK' },
@@ -517,8 +605,6 @@
         const socials = getSocialsFromEditor();
         socials.push({ type: 'telegram', value: '' });
         renderSocialsEditor(socials);
-        
-        // Фокусируемся на новом поле
         const container = document.getElementById('socialsEditor');
         const lastItem = container.lastElementChild;
         if (lastItem) {
@@ -557,7 +643,7 @@
         return obj;
     }
 
-    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+    // ===== ОСНОВНЫЕ ФУНКЦИИ =====
 
     function renderVoices() {
         const dubbers = allVoices.filter(v => v.roleType === 'dubber' || v.roleType === 'both');
@@ -569,22 +655,27 @@
         
         const renderList = (voices, containerId) => {
             const container = document.getElementById(containerId);
+            if (voices.length === 0) {
+                container.innerHTML = `<div style="color:#666; text-align:center; padding:20px; width:100%;">Нет участников</div>`;
+                return;
+            }
             container.innerHTML = voices.map(voice => {
                 let adminButtons = '';
                 if (isAdmin) {
                     adminButtons = `
                         <div class="admin-actions">
-                            <button class="edit-btn" onclick="event.preventDefault(); openEditVoiceModal('${voice.id}')">✏️</button>
-                            <button class="delete-btn" onclick="event.preventDefault(); handleDeleteVoice('${voice.id}')">🗑️</button>
+                            <button class="edit-btn" onclick="event.preventDefault(); openEditVoiceModal('${voice.id}')" title="Редактировать">✏️</button>
+                            <button class="delete-btn" onclick="event.preventDefault(); handleDeleteVoice('${voice.id}')" title="Удалить">🗑️</button>
                         </div>
                     `;
                 }
+                const avatarUrl = voice.image || 'https://via.placeholder.com/100/3a0035/fff?text=?';
                 return `
                     <div class="team-card-wrapper">
                         <a href="voice.html?id=${voice.id}" class="team-card">
-                            <img src="${voice.image || 'https://via.placeholder.com/100/3a0035/fff?text=?'}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/3a0035/fff?text=?'">
-                            <div class="team-card-name">${voice.name}</div>
-                            <div style="font-size:13px; color:#666;">${voice.status}</div>
+                            <img src="${avatarUrl}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/3a0035/fff?text=?'">
+                            <div class="team-card-name">${voice.name || 'Без имени'}</div>
+                            <div class="team-card-status">${voice.status || 'Даббер'}</div>
                         </a>
                         ${adminButtons}
                     </div>
@@ -626,11 +717,7 @@
         document.getElementById('voiceStatus').value = voice.status || '';
         document.getElementById('voiceJoinDate').value = voice.joinDate || '';
         document.getElementById('voiceBio').value = voice.bio || '';
-        
-        // Рендерим соцсети
-        const socials = voice.social || {};
-        renderSocialsEditor(socials);
-        
+        renderSocialsEditor(voice.social || {});
         document.getElementById('voiceModal').classList.add('active');
         document.body.style.overflow = 'hidden';
     };
@@ -658,9 +745,8 @@
         const joinDate = document.getElementById('voiceJoinDate').value.trim();
         const bio = document.getElementById('voiceBio').value.trim();
         
-        // Получаем соцсети из редактора
         const socialsArray = getSocialsFromEditor();
-        const socials = socialsArrayToObject(socialsArray);
+        const social = socialsArrayToObject(socialsArray);
         
         const data = {
             id: id,
@@ -672,7 +758,7 @@
             status: status,
             joinDate: joinDate || '2026',
             bio: bio,
-            social: socials
+            social: social
         };
         
         let result;
