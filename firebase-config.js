@@ -23,7 +23,11 @@ import {
     where,
     orderBy,
     serverTimestamp,
-    writeBatch
+    writeBatch,
+    increment,
+    arrayUnion,
+    arrayRemove,
+    runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ============================================================
@@ -38,7 +42,6 @@ const firebaseConfig = {
     appId: "1:91239326767:web:7488b92e5cf0a3d188fa82"
 };
 
-// ИНИЦИАЛИЗАЦИЯ
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -60,7 +63,13 @@ async function registerUser(email, password, displayName) {
             email: email,
             photoURL: '',
             role: 'user',
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
+            // Статистика
+            viewsCount: 0,
+            commentsCount: 0,
+            subscribers: [],
+            subscriptions: [],
+            achievements: []
         });
         
         return { success: true, user: user };
@@ -105,7 +114,7 @@ async function resetPassword(email) {
 }
 
 // ============================================================
-// ========== ПОЛЬЗОВАТЕЛИ (РОЛИ) ==========
+// ========== ПОЛЬЗОВАТЕЛИ ==========
 // ============================================================
 
 async function getUserData(uid) {
@@ -115,21 +124,39 @@ async function getUserData(uid) {
         if (docSnap.exists()) {
             return { success: true, data: docSnap.data() };
         } else {
-            // Создаём пользователя с ролью по умолчанию
             const user = getCurrentUser();
-            if (user) {
+            if (user && user.uid === uid) {
                 const newData = {
                     displayName: user.displayName || user.email || 'Пользователь',
                     email: user.email,
                     photoURL: user.photoURL || '',
                     role: 'user',
-                    createdAt: serverTimestamp()
+                    createdAt: serverTimestamp(),
+                    viewsCount: 0,
+                    commentsCount: 0,
+                    subscribers: [],
+                    subscriptions: [],
+                    achievements: []
                 };
                 await setDoc(docRef, newData);
                 return { success: true, data: newData };
             }
             return { success: false, error: "Данные не найдены" };
         }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getUserByEmail(email) {
+    try {
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            return { success: true, data: { id: doc.id, ...doc.data() } };
+        }
+        return { success: false, error: "Пользователь не найден" };
     } catch (error) {
         return { success: false, error: error.message };
     }
@@ -155,7 +182,7 @@ async function updateUserProfile(uid, data) {
             updatedAt: serverTimestamp()
         });
         const user = getCurrentUser();
-        if (user) {
+        if (user && user.uid === uid) {
             if (data.displayName) await updateProfile(user, { displayName: data.displayName });
             if (data.photoURL !== undefined) await updateProfile(user, { photoURL: data.photoURL });
         }
@@ -196,6 +223,268 @@ async function isAdmin(uid) {
 async function isDubber(uid) {
     const role = await getUserRole(uid);
     return role === 'dubber' || role === 'admin';
+}
+
+// ============================================================
+// ========== ПОДПИСКИ ==========
+// ============================================================
+
+async function toggleSubscribe(currentUserId, targetUserId) {
+    try {
+        const targetRef = doc(db, "users", targetUserId);
+        const currentRef = doc(db, "users", currentUserId);
+        
+        const targetDoc = await getDoc(targetRef);
+        if (!targetDoc.exists()) {
+            return { success: false, error: "Пользователь не найден" };
+        }
+        
+        const targetData = targetDoc.data();
+        const subscribers = targetData.subscribers || [];
+        const isSubscribed = subscribers.includes(currentUserId);
+        
+        await runTransaction(db, async (transaction) => {
+            if (isSubscribed) {
+                transaction.update(targetRef, {
+                    subscribers: arrayRemove(currentUserId)
+                });
+                transaction.update(currentRef, {
+                    subscriptions: arrayRemove(targetUserId)
+                });
+            } else {
+                transaction.update(targetRef, {
+                    subscribers: arrayUnion(currentUserId)
+                });
+                transaction.update(currentRef, {
+                    subscriptions: arrayUnion(targetUserId)
+                });
+            }
+        });
+        
+        return { success: true, isSubscribed: !isSubscribed };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getSubscribersCount(uid) {
+    try {
+        const result = await getUserData(uid);
+        if (result.success) {
+            return (result.data.subscribers || []).length;
+        }
+        return 0;
+    } catch (error) {
+        return 0;
+    }
+}
+
+async function isSubscribed(currentUserId, targetUserId) {
+    try {
+        const result = await getUserData(targetUserId);
+        if (result.success) {
+            return (result.data.subscribers || []).includes(currentUserId);
+        }
+        return false;
+    } catch (error) {
+        return false;
+    }
+}
+
+// ============================================================
+// ========== ДОСТИЖЕНИЯ ==========
+// ============================================================
+
+const ACHIEVEMENTS = {
+    FIRST_COMMENT: { id: 'first_comment', name: 'Первый комментарий', description: 'Написал первый комментарий', icon: '💬' },
+    TEN_COMMENTS: { id: 'ten_comments', name: 'Болтун', description: 'Написал 10 комментариев', icon: '🗣️' },
+    FIFTY_COMMENTS: { id: 'fifty_comments', name: 'Оратор', description: 'Написал 50 комментариев', icon: '📢' },
+    HUNDRED_COMMENTS: { id: 'hundred_comments', name: 'Легенда форума', description: 'Написал 100 комментариев', icon: '👑' },
+    FIRST_VIEW: { id: 'first_view', name: 'Первый просмотр', description: 'Посмотрел первую серию', icon: '🎬' },
+    TEN_VIEWS: { id: 'ten_views', name: 'Зритель', description: 'Посмотрел 10 серий', icon: '📺' },
+    FIFTY_VIEWS: { id: 'fifty_views', name: 'Киноман', description: 'Посмотрел 50 серий', icon: '🎞️' },
+    HUNDRED_VIEWS: { id: 'hundred_views', name: 'Гуру аниме', description: 'Посмотрел 100 серий', icon: '🏆' },
+};
+
+async function checkAndAddAchievement(uid, type, value) {
+    try {
+        const result = await getUserData(uid);
+        if (!result.success) return;
+        
+        const userData = result.data;
+        const achievements = userData.achievements || [];
+        const existingIds = achievements.map(a => a.id);
+        let newAchievements = [];
+        
+        if (type === 'comments') {
+            if (value >= 100 && !existingIds.includes('hundred_comments')) {
+                newAchievements.push(ACHIEVEMENTS.HUNDRED_COMMENTS);
+            } else if (value >= 50 && !existingIds.includes('fifty_comments')) {
+                newAchievements.push(ACHIEVEMENTS.FIFTY_COMMENTS);
+            } else if (value >= 10 && !existingIds.includes('ten_comments')) {
+                newAchievements.push(ACHIEVEMENTS.TEN_COMMENTS);
+            } else if (value >= 1 && !existingIds.includes('first_comment')) {
+                newAchievements.push(ACHIEVEMENTS.FIRST_COMMENT);
+            }
+        } else if (type === 'views') {
+            if (value >= 100 && !existingIds.includes('hundred_views')) {
+                newAchievements.push(ACHIEVEMENTS.HUNDRED_VIEWS);
+            } else if (value >= 50 && !existingIds.includes('fifty_views')) {
+                newAchievements.push(ACHIEVEMENTS.FIFTY_VIEWS);
+            } else if (value >= 10 && !existingIds.includes('ten_views')) {
+                newAchievements.push(ACHIEVEMENTS.TEN_VIEWS);
+            } else if (value >= 1 && !existingIds.includes('first_view')) {
+                newAchievements.push(ACHIEVEMENTS.FIRST_VIEW);
+            }
+        }
+        
+        if (newAchievements.length > 0) {
+            const docRef = doc(db, "users", uid);
+            for (const ach of newAchievements) {
+                await updateDoc(docRef, {
+                    achievements: arrayUnion(ach)
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при добавлении достижения:', error);
+    }
+}
+
+async function addCustomAchievement(uid, achievement) {
+    try {
+        const docRef = doc(db, "users", uid);
+        await updateDoc(docRef, {
+            achievements: arrayUnion(achievement)
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================================
+// ========== КОММЕНТАРИИ (с отметками) ==========
+// ============================================================
+
+async function addComment(titleId, text, rating) {
+    const user = getCurrentUser();
+    if (!user) {
+        return { success: false, error: "Необходимо авторизоваться" };
+    }
+    try {
+        // Поиск упоминаний @email
+        const mentions = text.match(/@([^\s]+)/g) || [];
+        const mentionedEmails = mentions.map(m => m.substring(1));
+        
+        const userData = await getUserData(user.uid);
+        const displayName = userData.success ? userData.data.displayName : (user.displayName || "Аноним");
+        const photoURL = userData.success ? userData.data.photoURL : '';
+        
+        const docRef = await addDoc(collection(db, "comments"), {
+            titleId: titleId,
+            uid: user.uid,
+            name: displayName,
+            photoURL: photoURL,
+            text: text,
+            rating: rating || 5,
+            mentions: mentionedEmails,
+            time: serverTimestamp()
+        });
+        
+        // Увеличиваем счётчик комментариев
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+            commentsCount: increment(1)
+        });
+        
+        // Проверяем достижения
+        const newCommentsCount = (userData.success ? userData.data.commentsCount || 0 : 0) + 1;
+        await checkAndAddAchievement(user.uid, 'comments', newCommentsCount);
+        
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getComments(titleId) {
+    try {
+        const q = query(
+            collection(db, "comments"),
+            where("titleId", "==", titleId),
+            orderBy("time", "desc")
+        );
+        const querySnapshot = await getDocs(q);
+        const comments = [];
+        querySnapshot.forEach((doc) => {
+            comments.push({ id: doc.id, ...doc.data() });
+        });
+        return comments;
+    } catch (error) {
+        console.error('Ошибка загрузки комментариев:', error);
+        return [];
+    }
+}
+
+async function deleteComment(commentId) {
+    const user = getCurrentUser();
+    if (!user) return { success: false, error: "Не авторизован" };
+    try {
+        await deleteDoc(doc(db, "comments", commentId));
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================================
+// ========== ПРОСМОТРЫ СЕРИЙ ==========
+// ============================================================
+
+async function trackView(uid, titleId, episodeNumber) {
+    try {
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            viewsCount: increment(1)
+        });
+        
+        const result = await getUserData(uid);
+        if (result.success) {
+            const newViewsCount = (result.data.viewsCount || 0) + 1;
+            await checkAndAddAchievement(uid, 'views', newViewsCount);
+        }
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ============================================================
+// ========== СРЕДНЯЯ ОЦЕНКА ТАЙТЛА ==========
+// ============================================================
+
+async function getAverageRating(titleId) {
+    try {
+        const q = query(
+            collection(db, "comments"),
+            where("titleId", "==", titleId)
+        );
+        const snapshot = await getDocs(q);
+        let total = 0;
+        let count = 0;
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.rating) {
+                total += data.rating;
+                count++;
+            }
+        });
+        if (count === 0) return 0;
+        return Math.round((total / count) * 10) / 10;
+    } catch (error) {
+        return 0;
+    }
 }
 
 // ============================================================
@@ -355,6 +644,20 @@ async function getRolesByTitleId(titleId) {
     }
 }
 
+async function getRolesByVoiceId(voiceId) {
+    try {
+        const q = query(collection(db, "roles"), where("voiceId", "==", voiceId));
+        const snapshot = await getDocs(q);
+        const roles = [];
+        snapshot.forEach(doc => {
+            roles.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, roles: roles };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
 async function addRole(roleData) {
     try {
         const docRef = await addDoc(collection(db, "roles"), {
@@ -389,7 +692,7 @@ async function deleteRole(roleId) {
     }
 }
 
-// ---- МАТЕРИАЛЫ ДЛЯ ОЗВУЧКИ (dub-in) ----
+// ---- МАТЕРИАЛЫ ДЛЯ ОЗВУЧКИ ----
 
 async function getDubMaterials(titleId) {
     try {
@@ -399,19 +702,6 @@ async function getDubMaterials(titleId) {
             return { success: true, data: docSnap.data() };
         }
         return { success: true, data: { raw: [], softsubs: [], hardsubs: [] } };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
-async function updateDubMaterials(titleId, materialType, items) {
-    try {
-        const docRef = doc(db, "dubMaterials", titleId);
-        await setDoc(docRef, {
-            [materialType]: items,
-            updatedAt: serverTimestamp()
-        }, { merge: true });
-        return { success: true };
     } catch (error) {
         return { success: false, error: error.message };
     }
@@ -453,76 +743,17 @@ async function removeDubMaterial(titleId, materialType, index) {
 }
 
 // ============================================================
-// ========== КОММЕНТАРИИ ==========
-// ============================================================
-
-async function addComment(titleId, text, rating) {
-    const user = getCurrentUser();
-    if (!user) {
-        return { success: false, error: "Необходимо авторизоваться" };
-    }
-    try {
-        const userData = await getUserData(user.uid);
-        const displayName = userData.success ? userData.data.displayName : (user.displayName || "Аноним");
-        const photoURL = userData.success ? userData.data.photoURL : '';
-        const docRef = await addDoc(collection(db, "comments"), {
-            titleId: titleId,
-            uid: user.uid,
-            name: displayName,
-            photoURL: photoURL,
-            text: text,
-            rating: rating || 5,
-            time: serverTimestamp()
-        });
-        return { success: true, id: docRef.id };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
-async function getComments(titleId) {
-    try {
-        const q = query(
-            collection(db, "comments"),
-            where("titleId", "==", titleId),
-            orderBy("time", "desc")
-        );
-        const querySnapshot = await getDocs(q);
-        const comments = [];
-        querySnapshot.forEach((doc) => {
-            comments.push({ id: doc.id, ...doc.data() });
-        });
-        return comments;
-    } catch (error) {
-        console.error('Ошибка загрузки комментариев:', error);
-        return [];
-    }
-}
-
-async function deleteComment(commentId) {
-    const user = getCurrentUser();
-    if (!user) return { success: false, error: "Не авторизован" };
-    try {
-        await deleteDoc(doc(db, "comments", commentId));
-        return { success: true };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
-}
-
-// ============================================================
-// ========== ИНИЦИАЛИЗАЦИЯ ДАННЫХ (ПЕРВЫЙ ЗАПУСК) ==========
+// ========== ИНИЦИАЛИЗАЦИЯ ==========
 // ============================================================
 
 async function initializeData() {
     try {
         const titlesResult = await getTitles();
         if (titlesResult.success && titlesResult.titles.length > 0) {
-            console.log('📊 Данные уже существуют в Firestore');
             return;
         }
 
-        console.log('📝 Загрузка начальных данных в Firestore...');
+        console.log('📝 Загрузка начальных данных...');
         const batch = writeBatch(db);
 
         if (window.titlesDatabase && window.titlesDatabase.length > 0) {
@@ -556,9 +787,9 @@ async function initializeData() {
         }
 
         await batch.commit();
-        console.log('✅ Начальные данные загружены в Firestore!');
+        console.log('✅ Начальные данные загружены');
     } catch (error) {
-        console.error('❌ Ошибка загрузки начальных данных:', error);
+        console.error('❌ Ошибка:', error);
     }
 }
 
@@ -576,12 +807,24 @@ export {
     onAuthStateChangedListener,
     resetPassword,
     getUserData,
+    getUserByEmail,
     getUserRole,
     updateUserProfile,
     updateUserRole,
     getAllUsers,
     isAdmin,
     isDubber,
+    toggleSubscribe,
+    getSubscribersCount,
+    isSubscribed,
+    ACHIEVEMENTS,
+    checkAndAddAchievement,
+    addCustomAchievement,
+    addComment,
+    getComments,
+    deleteComment,
+    trackView,
+    getAverageRating,
     getTitles,
     getTitleById,
     addTitle,
@@ -594,16 +837,13 @@ export {
     deleteVoice,
     getRoles,
     getRolesByTitleId,
+    getRolesByVoiceId,
     addRole,
     updateRole,
     deleteRole,
     getDubMaterials,
-    updateDubMaterials,
     addDubMaterial,
     removeDubMaterial,
-    addComment,
-    getComments,
-    deleteComment,
     initializeData
 };
 

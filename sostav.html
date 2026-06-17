@@ -6,6 +6,186 @@
     <title>Состав - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <style>
+        .admin-toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: rgba(208, 0, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid #6d076d;
+        }
+        .admin-toolbar .admin-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        .admin-toolbar .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+
+        .team-card-wrapper {
+            position: relative;
+        }
+        .team-card-wrapper .admin-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .team-card-wrapper:hover .admin-actions {
+            opacity: 1;
+        }
+        .team-card-wrapper .admin-actions button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .team-card-wrapper .admin-actions .edit-btn {
+            background: #6d076d;
+            color: #fff;
+        }
+        .team-card-wrapper .admin-actions .edit-btn:hover {
+            background: #8a0a8a;
+        }
+        .team-card-wrapper .admin-actions .delete-btn {
+            background: #6d0000;
+            color: #fff;
+        }
+        .team-card-wrapper .admin-actions .delete-btn:hover {
+            background: #8a0000;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #1a001a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid #6d076d;
+            position: relative;
+        }
+        .modal-content h2 {
+            color: #d000ff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+        .modal-content .form-group label {
+            color: #aaa;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .modal-content .form-group input,
+        .modal-content .form-group textarea,
+        .modal-content .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #3a0035;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .modal-content .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .modal-content .form-group input:focus,
+        .modal-content .form-group textarea:focus {
+            border-color: #d000ff;
+            outline: none;
+        }
+        .modal-content .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .modal-content .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .modal-content .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .modal-content .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .team-card-wrapper .admin-actions {
+                opacity: 1;
+            }
+            .admin-toolbar {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -17,15 +197,149 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
 
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <h1 class="title">Состав команды</h1>
+        <hr>
+    </div>
+    
+    <div class="welcome-banner">
+        <h2 class="h2">Наша команда</h2>
+        <p>Всего: <span id="totalCount">0</span> человек</p>
+    </div>
+
+    <div class="content-box">
+        <!-- Админ-панель -->
+        <div id="adminPanel" style="display:none;" class="admin-toolbar">
+            <button class="admin-btn" onclick="openAddVoiceModal()">➕ Добавить даббера</button>
+            <button class="admin-btn" onclick="refreshVoices()">🔄 Обновить</button>
+            <span style="color:#666; font-size:14px; margin-left:auto;">👑 Режим администратора</span>
+        </div>
+
+        <!-- Статистика -->
+        <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
+            <div class="stat-box">
+                <div class="stat-number" id="dubberCount">0</div>
+                <div class="stat-label">Дабберы</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="techCount">0</div>
+                <div class="stat-label">Тех. персонал</div>
+            </div>
+        </div>
+
+        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+            🎙️ Дабберы
+        </h2>
+        <div id="dubberList" class="team-list"></div>
+
+        <hr>
+
+        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
+            🔧 Технический персонал
+        </h2>
+        <div id="techList" class="team-list"></div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования даббера -->
+<div class="modal-overlay" id="voiceModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeVoiceModal()">✕</button>
+        <h2 id="voiceModalTitle">Добавить даббера</h2>
+        <form id="voiceForm" onsubmit="saveVoice(event)">
+            <input type="hidden" id="editVoiceId" value="">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>ID (уникальный)</label>
+                    <input type="text" id="voiceId" placeholder="например: runi" required>
+                </div>
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" id="voiceName" placeholder="Имя" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Имя (англ.)</label>
+                    <input type="text" id="voiceNameEn" placeholder="English name">
+                </div>
+                <div class="form-group">
+                    <label>Имя (рус.)</label>
+                    <input type="text" id="voiceNameRu" placeholder="Имя на русском">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Ссылка на аватарку</label>
+                <input type="text" id="voiceImage" placeholder="images/voice.jpg">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Тип роли</label>
+                    <select id="voiceRoleType">
+                        <option value="dubber">Даббер</option>
+                        <option value="tech">Тех. персонал</option>
+                        <option value="both">И даббер, и тех.</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Статус</label>
+                    <input type="text" id="voiceStatus" placeholder="Даббер" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Дата присоединения</label>
+                    <input type="text" id="voiceJoinDate" placeholder="2026">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Биография</label>
+                <textarea id="voiceBio" placeholder="Расскажите о даббере..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Соцсети (JSON-формат)</label>
+                <input type="text" id="voiceSocial" placeholder='{"telegram":"username","vk":"id"}' style="font-size:12px;">
+                <small style="color:#666;">Формат: {"telegram":"username","vk":"id","github":"username"}</small>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="voiceSubmitBtn">💾 Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
+</div>
+
 <script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener, 
+        getUserRole,
+        getVoices,
+        addVoice,
+        updateVoice,
+        deleteVoice
+    } from './firebase-config.js';
+
+    let allVoices = [];
+    let isAdmin = false;
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -41,118 +355,221 @@
     async function updateDubInLink(user) {
         const link = document.getElementById('dubInLink');
         if (!link) return;
-        
         if (user) {
             const role = await getUserRole(user.uid);
-            if (role === 'dubber' || role === 'admin') {
-                link.style.display = 'inline-flex';
-            } else {
-                link.style.display = 'none';
-            }
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
         } else {
             link.style.display = 'none';
         }
     }
 
+    async function checkAdmin(user) {
+        if (user) {
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+            document.getElementById('adminPanel').style.display = isAdmin ? 'flex' : 'none';
+        } else {
+            isAdmin = false;
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+    }
+
+    function renderVoices() {
+        const dubbers = allVoices.filter(v => v.roleType === 'dubber' || v.roleType === 'both');
+        const techStaff = allVoices.filter(v => v.roleType === 'tech' || v.roleType === 'both');
+        
+        document.getElementById('dubberCount').innerText = dubbers.length;
+        document.getElementById('techCount').innerText = techStaff.length;
+        document.getElementById('totalCount').innerText = allVoices.length;
+        
+        const renderList = (voices, containerId) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = voices.map(voice => {
+                let adminButtons = '';
+                if (isAdmin) {
+                    adminButtons = `
+                        <div class="admin-actions">
+                            <button class="edit-btn" onclick="event.preventDefault(); openEditVoiceModal('${voice.id}')">✏️</button>
+                            <button class="delete-btn" onclick="event.preventDefault(); handleDeleteVoice('${voice.id}')">🗑️</button>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="team-card-wrapper">
+                        <a href="voice.html?id=${voice.id}" class="team-card">
+                            <img src="${voice.image || 'https://via.placeholder.com/100/3a0035/fff?text=?'}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/3a0035/fff?text=?'">
+                            <div class="team-card-name">${voice.name}</div>
+                            <div style="font-size:13px; color:#666;">${voice.status}</div>
+                        </a>
+                        ${adminButtons}
+                    </div>
+                `;
+            }).join('');
+        };
+        
+        renderList(dubbers, 'dubberList');
+        renderList(techStaff, 'techList');
+    }
+
+    // ===== АДМИН-ФУНКЦИИ =====
+
+    window.openAddVoiceModal = function() {
+        document.getElementById('voiceModalTitle').textContent = '➕ Добавить даббера';
+        document.getElementById('voiceSubmitBtn').textContent = '💾 Создать';
+        document.getElementById('editVoiceId').value = '';
+        document.getElementById('voiceForm').reset();
+        document.getElementById('voiceId').disabled = false;
+        document.getElementById('voiceModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.openEditVoiceModal = function(voiceId) {
+        const voice = allVoices.find(v => v.id === voiceId);
+        if (!voice) return;
+        
+        document.getElementById('voiceModalTitle').textContent = '✏️ Редактировать: ' + voice.name;
+        document.getElementById('voiceSubmitBtn').textContent = '💾 Обновить';
+        document.getElementById('editVoiceId').value = voice.id;
+        document.getElementById('voiceId').value = voice.id;
+        document.getElementById('voiceId').disabled = true;
+        document.getElementById('voiceName').value = voice.name || '';
+        document.getElementById('voiceNameEn').value = voice.nameEn || '';
+        document.getElementById('voiceNameRu').value = voice.nameRu || '';
+        document.getElementById('voiceImage').value = voice.image || '';
+        document.getElementById('voiceRoleType').value = voice.roleType || 'dubber';
+        document.getElementById('voiceStatus').value = voice.status || '';
+        document.getElementById('voiceJoinDate').value = voice.joinDate || '';
+        document.getElementById('voiceBio').value = voice.bio || '';
+        document.getElementById('voiceSocial').value = JSON.stringify(voice.social || {});
+        
+        document.getElementById('voiceModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeVoiceModal = function() {
+        document.getElementById('voiceModal').classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('voiceId').disabled = false;
+    };
+
+    window.saveVoice = async function(event) {
+        event.preventDefault();
+        const submitBtn = document.getElementById('voiceSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Сохранение...';
+        
+        const editId = document.getElementById('editVoiceId').value;
+        const id = document.getElementById('voiceId').value.trim();
+        const name = document.getElementById('voiceName').value.trim();
+        const nameEn = document.getElementById('voiceNameEn').value.trim();
+        const nameRu = document.getElementById('voiceNameRu').value.trim();
+        const image = document.getElementById('voiceImage').value.trim();
+        const roleType = document.getElementById('voiceRoleType').value;
+        const status = document.getElementById('voiceStatus').value.trim();
+        const joinDate = document.getElementById('voiceJoinDate').value.trim();
+        const bio = document.getElementById('voiceBio').value.trim();
+        
+        let social = {};
+        try {
+            const raw = document.getElementById('voiceSocial').value.trim();
+            if (raw) {
+                social = JSON.parse(raw);
+            }
+        } catch (e) {
+            alert('❌ Ошибка в формате JSON соцсетей. Проверьте синтаксис.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '💾 Сохранить';
+            return;
+        }
+        
+        const data = {
+            id: id,
+            name: name,
+            nameEn: nameEn,
+            nameRu: nameRu,
+            image: image,
+            roleType: roleType,
+            status: status,
+            joinDate: joinDate || '2026',
+            bio: bio,
+            social: social
+        };
+        
+        let result;
+        if (editId) {
+            result = await updateVoice(editId, data);
+        } else {
+            result = await addVoice(data);
+        }
+        
+        if (result.success) {
+            alert('✅ Даббер сохранён!');
+            closeVoiceModal();
+            await loadVoicesFromFirestore();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Сохранить';
+    };
+
+    window.handleDeleteVoice = async function(voiceId) {
+        const voice = allVoices.find(v => v.id === voiceId);
+        if (!confirm(`Удалить даббера "${voice?.name || voiceId}"?`)) return;
+        const result = await deleteVoice(voiceId);
+        if (result.success) {
+            alert('✅ Даббер удалён');
+            await loadVoicesFromFirestore();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
+    window.refreshVoices = async function() {
+        await loadVoicesFromFirestore();
+    };
+
+    async function loadVoicesFromFirestore() {
+        const result = await getVoices();
+        if (result.success) {
+            allVoices = result.voices;
+            renderVoices();
+        } else {
+            console.error('Ошибка загрузки дабберов:', result.error);
+        }
+    }
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+
     onAuthStateChangedListener(async (user) => {
         updateAuthButton(user);
         await updateDubInLink(user);
+        await checkAdmin(user);
+        if (user) {
+            await loadVoicesFromFirestore();
+        } else {
+            // Загружаем из data.js для неавторизованных
+            if (window.voicesDatabase) {
+                allVoices = window.voicesDatabase;
+                renderVoices();
+            }
+        }
     });
 
-    // При загрузке страницы
     document.addEventListener('DOMContentLoaded', async () => {
         const user = getCurrentUser();
         updateAuthButton(user);
         await updateDubInLink(user);
+        await checkAdmin(user);
+        if (user) {
+            await loadVoicesFromFirestore();
+        } else if (window.voicesDatabase) {
+            allVoices = window.voicesDatabase;
+            renderVoices();
+        }
     });
 </script>
 
-<div class="container">
-    <div class="header">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
-        <h1 class="title">Состав команды</h1>
-        <hr>
-    </div>
-    
-    <div class="welcome-banner">
-        <h2 class="h2">Наша команда</h2>
-        <p>Всего: <span id="totalCount">0</span> человек</p>
-    </div>
-
-    <div class="content-box">
-        <!-- Статистика -->
-        <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap;">
-            <div class="stat-box">
-                <div class="stat-number" id="dubberCount">0</div>
-                <div class="stat-label">Дабберы</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-number" id="techCount">0</div>
-                <div class="stat-label">Тех. персонал</div>
-            </div>
-        </div>
-
-        <!-- Список дабберов -->
-        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
-            🎙️ Дабберы
-        </h2>
-        <div id="dubberList" class="team-list"></div>
-
-        <hr>
-
-        <!-- Список технического персонала -->
-        <h2 style="color: #8c0087; border-left: 5px solid #320063; padding-left: 15px; margin-top: 30px;">
-            🔧 Технический персонал
-        </h2>
-        <div id="techList" class="team-list"></div>
-    </div>
-</div>
-
-<div class="container" style="text-align: center;">
-    <hr>
-    <p>© 2026 foxline Studio</p>
-</div>
-
-<script>
-    function loadVoices() {
-        if (!window.voicesDatabase) return;
-        
-        // Фильтруем по roleType
-        const dubbers = window.voicesDatabase.filter(v => 
-            v.roleType === 'dubber' || v.roleType === 'both'
-        );
-        
-        const techStaff = window.voicesDatabase.filter(v => 
-            v.roleType === 'tech' || v.roleType === 'both'
-        );
-        
-        // Обновляем счётчики
-        document.getElementById('dubberCount').innerText = dubbers.length;
-        document.getElementById('techCount').innerText = techStaff.length;
-        document.getElementById('totalCount').innerText = window.voicesDatabase.length;
-        
-        // Рендерим дабберов
-        const dubberContainer = document.getElementById('dubberList');
-        dubberContainer.innerHTML = dubbers.map(voice => `
-            <a href="voice.html?id=${voice.id}" class="team-card">
-                <img src="${voice.image}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/001a8c/ffffff'">
-                <div class="team-card-name">${voice.name}</div>
-                <div style="font-size:13px; color:#666;">${voice.status}</div>
-            </a>
-        `).join('');
-        
-        // Рендерим тех. персонал
-        const techContainer = document.getElementById('techList');
-        techContainer.innerHTML = techStaff.map(voice => `
-            <a href="voice.html?id=${voice.id}" class="team-card">
-                <img src="${voice.image}" class="team-card-avatar" onerror="this.src='https://via.placeholder.com/100/320063/ffffff'">
-                <div class="team-card-name">${voice.name}</div>
-                <div style="font-size:13px; color:#666;">${voice.status}</div>
-            </a>
-        `).join('');
-    }
-    
-    document.addEventListener('DOMContentLoaded', loadVoices);
-</script>
 </body>
 </html>

@@ -8,7 +8,6 @@
     <script src="data.js"></script>
     <script type="module" src="firebase-config.js"></script>
     <style>
-        /* Стили для фильтров */
         .filters-container {
             display: flex;
             flex-wrap: wrap;
@@ -19,11 +18,6 @@
             border-radius: 15px;
             border: 1px solid #3a0035;
             align-items: center;
-        }
-        .filters-container label {
-            color: #aaa;
-            font-size: 14px;
-            font-weight: bold;
         }
         .filter-group {
             display: flex;
@@ -51,9 +45,6 @@
             border-color: #6d076d;
             color: #fff;
         }
-        .filter-btn.active:hover {
-            background: linear-gradient(135deg, #8a0a8a, #4a0045);
-        }
         .filter-label {
             color: #666;
             font-size: 13px;
@@ -74,38 +65,34 @@
             font-weight: bold;
         }
         .episode-input {
-    width: 60px;
-    padding: 6px 10px;
-    border-radius: 25px;
-    border: 2px solid #3a0035;
-    background: rgba(58, 0, 53, 0.3);
-    color: #fff;
-    font-size: 14px;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    /* Убираем стрелки вверх/вниз (стандарт) */
-    appearance: textfield;
-    -webkit-appearance: textfield;
-    -moz-appearance: textfield;
-}
+            width: 60px;
+            padding: 6px 10px;
+            border-radius: 25px;
+            border: 2px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            appearance: textfield;
+            -webkit-appearance: textfield;
+            -moz-appearance: textfield;
+        }
         .episode-input:focus {
             border-color: #d000ff;
             box-shadow: 0 0 15px rgba(208, 0, 255, 0.2);
         }
-        .episode-input::placeholder {
-            color: #666;
-        }
         .episode-input::-webkit-outer-spin-button,
-.episode-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-.episode-input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
+        .episode-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .episode-input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
         .episode-range-label {
             color: #666;
             font-size: 13px;
@@ -125,6 +112,189 @@
             border-color: #6d076d;
             color: #fff;
         }
+
+        /* Админ-стили */
+        .admin-toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: rgba(208, 0, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid #6d076d;
+        }
+        .admin-toolbar .admin-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        .admin-toolbar .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .admin-toolbar .admin-btn.danger {
+            background: #6d0000;
+        }
+        .admin-toolbar .admin-btn.danger:hover {
+            background: #8a0000;
+        }
+
+        .title-card-wrapper {
+            position: relative;
+        }
+        .title-card-wrapper .admin-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .title-card-wrapper:hover .admin-actions {
+            opacity: 1;
+        }
+        .title-card-wrapper .admin-actions button {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .title-card-wrapper .admin-actions .edit-btn {
+            background: #6d076d;
+            color: #fff;
+        }
+        .title-card-wrapper .admin-actions .edit-btn:hover {
+            background: #8a0a8a;
+        }
+        .title-card-wrapper .admin-actions .delete-btn {
+            background: #6d0000;
+            color: #fff;
+        }
+        .title-card-wrapper .admin-actions .delete-btn:hover {
+            background: #8a0000;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #1a001a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid #6d076d;
+            position: relative;
+        }
+        .modal-content h2 {
+            color: #d000ff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+        .modal-content .form-group label {
+            color: #aaa;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .modal-content .form-group input,
+        .modal-content .form-group textarea,
+        .modal-content .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 2px solid #3a0035;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .modal-content .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .modal-content .form-group input:focus,
+        .modal-content .form-group textarea:focus {
+            border-color: #d000ff;
+            outline: none;
+        }
+        .modal-content .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .modal-content .form-row .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+        .modal-content .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        .modal-content .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .modal-content .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         @media (max-width: 768px) {
             .filters-container {
                 flex-direction: column;
@@ -144,6 +314,12 @@
             .episode-input {
                 width: 50px;
             }
+            .admin-toolbar {
+                justify-content: center;
+            }
+            .title-card-wrapper .admin-actions {
+                opacity: 1;
+            }
         }
         @media (max-width: 480px) {
             .filters-container {
@@ -158,6 +334,9 @@
                 padding: 5px 8px;
                 font-size: 12px;
             }
+            .modal-content {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -171,15 +350,155 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
 
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <h1 class="title">Наши тайтлы</h1>
+        <hr>
+    </div>
+    
+    <div class="content-box">
+        <!-- Админ-панель -->
+        <div id="adminPanel" style="display:none;" class="admin-toolbar">
+            <button class="admin-btn" onclick="openAddModal()">➕ Добавить тайтл</button>
+            <button class="admin-btn" onclick="refreshTitles()">🔄 Обновить</button>
+            <span style="color:#666; font-size:14px; margin-left:auto;">👑 Режим администратора</span>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="filters-container">
+            <div class="filter-group">
+                <span class="filter-label">📂 Тип:</span>
+                <button class="filter-btn active" data-filter="type" data-value="all">Все</button>
+                <button class="filter-btn" data-filter="type" data-value="Сериал">Сериалы</button>
+                <button class="filter-btn" data-filter="type" data-value="Фильм">Фильмы</button>
+                <button class="filter-btn" data-filter="type" data-value="Короткометражка">Короткометражки</button>
+            </div>
+            <span class="filter-divider">|</span>
+            <div class="filter-group">
+                <span class="filter-label">📊 Серий:</span>
+                <span class="episode-range-label">от</span>
+                <input type="number" class="episode-input" id="episodeFrom" placeholder="0" min="0">
+                <span class="episode-range-label">до</span>
+                <input type="number" class="episode-input" id="episodeTo" placeholder="∞" min="0">
+                <button class="reset-episodes-btn" id="resetEpisodes">✕ Сбросить</button>
+            </div>
+            <div class="titles-count">
+                Найдено: <span id="titlesCount">0</span>
+            </div>
+        </div>
+        
+        <div class="titles-grid" id="titles-container">
+            <div class="loading">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления/редактирования -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h2 id="modalTitle">Добавить тайтл</h2>
+        <form id="titleForm" onsubmit="saveTitle(event)">
+            <input type="hidden" id="editId" value="">
+            
+            <div class="form-group">
+                <label>ID тайтла (уникальный, латиница)</label>
+                <input type="text" id="titleId" placeholder="например: dandadan" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Название (рус.)</label>
+                    <input type="text" id="titleName" placeholder="Название" required>
+                </div>
+                <div class="form-group">
+                    <label>Название (англ.)</label>
+                    <input type="text" id="titleNameEn" placeholder="English name">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Тип</label>
+                    <select id="titleType">
+                        <option value="Сериал">Сериал</option>
+                        <option value="Фильм">Фильм</option>
+                        <option value="Короткометражка">Короткометражка</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Год</label>
+                    <input type="number" id="titleYear" placeholder="2024">
+                </div>
+                <div class="form-group">
+                    <label>Кол-во серий</label>
+                    <input type="number" id="titleEpisodes" placeholder="12" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Рейтинг</label>
+                    <input type="number" id="titleRating" placeholder="5" min="0" max="5" step="0.1">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Жанры (через запятую)</label>
+                <input type="text" id="titleGenres" placeholder="Комедия, Экшен, Романтика">
+            </div>
+            
+            <div class="form-group">
+                <label>Ссылка на вертикальную обложку</label>
+                <input type="text" id="titleImageVert" placeholder="images/title_vert.jpg">
+            </div>
+            
+            <div class="form-group">
+                <label>Ссылка на горизонтальную обложку</label>
+                <input type="text" id="titleImageHoriz" placeholder="images/title_horiz.jpg">
+            </div>
+            
+            <div class="form-group">
+                <label>Описание</label>
+                <textarea id="titleDescription" placeholder="Описание тайтла..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Список серий (JSON-формат)</label>
+                <textarea id="titleEpisodesList" placeholder='[{"number":1,"title":"Первая серия","url":"https://...","status":"Озвучено"}]' style="min-height:100px; font-size:12px;"></textarea>
+                <small style="color:#666;">Формат: [{"number":1,"title":"Название","url":"ссылка","status":"Озвучено"}]</small>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">💾 Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
+</div>
+
 <script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener, 
+        getUserRole,
+        getTitles,
+        addTitle,
+        updateTitle,
+        deleteTitle
+    } from './firebase-config.js';
+
+    let allTitles = [];
+    let currentFilterType = 'all';
+    let currentEpisodeFrom = 0;
+    let currentEpisodeTo = Infinity;
+    let isAdmin = false;
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -195,105 +514,33 @@
     async function updateDubInLink(user) {
         const link = document.getElementById('dubInLink');
         if (!link) return;
-        
         if (user) {
             const role = await getUserRole(user.uid);
-            if (role === 'dubber' || role === 'admin') {
-                link.style.display = 'inline-flex';
-            } else {
-                link.style.display = 'none';
-            }
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
         } else {
             link.style.display = 'none';
         }
     }
 
-    onAuthStateChangedListener(async (user) => {
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-
-    // При загрузке страницы
-    document.addEventListener('DOMContentLoaded', async () => {
-        const user = getCurrentUser();
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-</script>
-
-<div class="container">
-    <div class="header">
-        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
-        <h1 class="title">Наши тайтлы</h1>
-        <hr>
-    </div>
-    
-    <div class="content-box">
-        <!-- ФИЛЬТРЫ -->
-        <div class="filters-container">
-            <div class="filter-group">
-                <span class="filter-label">📂 Тип:</span>
-                <button class="filter-btn active" data-filter="type" data-value="all">Все</button>
-                <button class="filter-btn" data-filter="type" data-value="Сериал">Сериалы</button>
-                <button class="filter-btn" data-filter="type" data-value="Фильм">Фильмы</button>
-                <button class="filter-btn" data-filter="type" data-value="Короткометражка">Короткометражки</button>
-            </div>
-            
-            <span class="filter-divider">|</span>
-            
-            <div class="filter-group">
-                <span class="filter-label">📊 Серий:</span>
-                <span class="episode-range-label">от</span>
-                <input type="number" class="episode-input" id="episodeFrom" placeholder="0" min="0">
-                <span class="episode-range-label">до</span>
-                <input type="number" class="episode-input" id="episodeTo" placeholder="∞" min="0">
-                <button class="reset-episodes-btn" id="resetEpisodes">✕ Сбросить</button>
-            </div>
-            
-            <div class="titles-count">
-                Найдено: <span id="titlesCount">0</span>
-            </div>
-        </div>
-        
-        <!-- Список тайтлов -->
-        <div class="titles-grid" id="titles-container">
-            <div class="loading">Загрузка...</div>
-        </div>
-    </div>
-</div>
-
-<div class="container" style="text-align: center;">
-    <hr>
-    <p>© 2026 foxline Studio</p>
-</div>
-
-<script type="module">
-    import { getCurrentUser, onAuthStateChangedListener } from './firebase-config.js';
-
-    let currentFilterType = 'all';
-    let currentEpisodeFrom = 0;
-    let currentEpisodeTo = Infinity;
-
-    function updateAuthButton(user) {
-        const btn = document.getElementById('authBtn');
+    async function checkAdmin(user) {
         if (user) {
-            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
-            btn.href = 'profile.html';
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+            const panel = document.getElementById('adminPanel');
+            panel.style.display = isAdmin ? 'flex' : 'none';
         } else {
-            btn.textContent = '🔑 Вход';
-            btn.href = 'login.html';
+            isAdmin = false;
+            document.getElementById('adminPanel').style.display = 'none';
         }
     }
 
     function getFilteredTitles() {
-        let titles = window.titlesDatabase || [];
+        let titles = allTitles;
         
-        // Фильтр по типу
         if (currentFilterType !== 'all') {
             titles = titles.filter(t => t.type === currentFilterType);
         }
         
-        // Фильтр по диапазону серий
         titles = titles.filter(t => {
             const eps = t.episodes || 0;
             return eps >= currentEpisodeFrom && eps <= currentEpisodeTo;
@@ -305,7 +552,6 @@
     function renderTitles() {
         const container = document.getElementById('titles-container');
         const countEl = document.getElementById('titlesCount');
-        
         const filtered = getFilteredTitles();
         
         if (filtered.length === 0) {
@@ -323,22 +569,37 @@
         countEl.textContent = filtered.length;
         
         container.innerHTML = filtered.map(title => {
-            const image = title.imageVertical || title.imageHorizontal || title.image;
-            return `
-                <a href="title.html?id=${title.id}" class="title-card">
-                    <img src="${image}" alt="${title.name}" class="title-card-image" onerror="this.src='https://via.placeholder.com/200x280/6d076d/fff?text=${encodeURIComponent(title.name)}'">
-                    <div class="title-card-info">
-                        <div class="title-card-name">${title.name}</div>
-                        <div class="title-card-meta">
-                            <span>${title.type}</span>
-                            <span>${title.episodes} серий</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                            <span style="color:#666; font-size:13px;">${title.year || ''}</span>
-                            <span style="color:#ffaa00;">⭐ ${title.rating}</span>
-                        </div>
+            const image = title.imageVertical || title.imageHorizontal || title.image || 'https://via.placeholder.com/200x280/3a0035/fff?text=No+Image';
+            
+            // Админ-кнопки
+            let adminButtons = '';
+            if (isAdmin) {
+                adminButtons = `
+                    <div class="admin-actions">
+                        <button class="edit-btn" onclick="event.preventDefault(); openEditModal('${title.id}')">✏️</button>
+                        <button class="delete-btn" onclick="event.preventDefault(); handleDelete('${title.id}')">🗑️</button>
                     </div>
-                </a>
+                `;
+            }
+            
+            return `
+                <div class="title-card-wrapper">
+                    <a href="title.html?id=${title.id}" class="title-card">
+                        <img src="${image}" alt="${title.name}" class="title-card-image" onerror="this.src='https://via.placeholder.com/200x280/3a0035/fff?text=${encodeURIComponent(title.name)}'">
+                        <div class="title-card-info">
+                            <div class="title-card-name">${title.name}</div>
+                            <div class="title-card-meta">
+                                <span>${title.type}</span>
+                                <span>${title.episodes} серий</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                                <span style="color:#666; font-size:13px;">${title.year || ''}</span>
+                                <span style="color:#ffaa00;">⭐ ${title.rating}</span>
+                            </div>
+                        </div>
+                    </a>
+                    ${adminButtons}
+                </div>
             `;
         }).join('');
     }
@@ -347,54 +608,34 @@
         currentFilterType = 'all';
         currentEpisodeFrom = 0;
         currentEpisodeTo = Infinity;
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        document.querySelectorAll('.filter-btn[data-filter="type"][data-value="all"]').forEach(btn => {
-            btn.classList.add('active');
-        });
-        
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.filter-btn[data-filter="type"][data-value="all"]').forEach(btn => btn.classList.add('active'));
         document.getElementById('episodeFrom').value = '';
         document.getElementById('episodeTo').value = '';
-        
         renderTitles();
     };
 
     function setupFilters() {
-        // Фильтр по типу
         document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(btn => {
             btn.addEventListener('click', function() {
-                const value = this.dataset.value;
-                
-                document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(b => {
-                    b.classList.remove('active');
-                });
+                document.querySelectorAll('.filter-btn[data-filter="type"]').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                
-                currentFilterType = value;
+                currentFilterType = this.dataset.value;
                 renderTitles();
             });
         });
 
-        // Фильтр по диапазону серий
         const episodeFrom = document.getElementById('episodeFrom');
         const episodeTo = document.getElementById('episodeTo');
-        
         const updateEpisodeFilter = function() {
             const from = parseInt(episodeFrom.value);
             const to = parseInt(episodeTo.value);
-            
             currentEpisodeFrom = isNaN(from) ? 0 : from;
             currentEpisodeTo = isNaN(to) ? Infinity : to;
-            
             renderTitles();
         };
-        
         episodeFrom.addEventListener('input', updateEpisodeFilter);
         episodeTo.addEventListener('input', updateEpisodeFilter);
-        
-        // Сброс диапазона
         document.getElementById('resetEpisodes').addEventListener('click', function() {
             episodeFrom.value = '';
             episodeTo.value = '';
@@ -402,32 +643,162 @@
             currentEpisodeTo = Infinity;
             renderTitles();
         });
-
-        // Обработка Enter в полях ввода
-        episodeFrom.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                episodeTo.focus();
-            }
-        });
-        episodeTo.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                renderTitles();
-            }
-        });
     }
 
-    function loadTitles() {
-        renderTitles();
-        setupFilters();
+    // ===== АДМИН-ФУНКЦИИ =====
+
+    window.openAddModal = function() {
+        document.getElementById('modalTitle').textContent = '➕ Добавить тайтл';
+        document.getElementById('submitBtn').textContent = '💾 Создать';
+        document.getElementById('editId').value = '';
+        document.getElementById('titleForm').reset();
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.openEditModal = function(titleId) {
+        const title = allTitles.find(t => t.id === titleId);
+        if (!title) return;
+        
+        document.getElementById('modalTitle').textContent = '✏️ Редактировать: ' + title.name;
+        document.getElementById('submitBtn').textContent = '💾 Обновить';
+        document.getElementById('editId').value = title.id;
+        document.getElementById('titleId').value = title.id;
+        document.getElementById('titleId').disabled = true;
+        document.getElementById('titleName').value = title.name || '';
+        document.getElementById('titleNameEn').value = title.nameEn || '';
+        document.getElementById('titleType').value = title.type || 'Сериал';
+        document.getElementById('titleYear').value = title.year || '';
+        document.getElementById('titleEpisodes').value = title.episodes || '';
+        document.getElementById('titleRating').value = title.rating || '';
+        document.getElementById('titleGenres').value = (title.genres || []).join(', ');
+        document.getElementById('titleImageVert').value = title.imageVertical || '';
+        document.getElementById('titleImageHoriz').value = title.imageHorizontal || '';
+        document.getElementById('titleDescription').value = title.description || '';
+        document.getElementById('titleEpisodesList').value = JSON.stringify(title.episodesList || [], null, 2);
+        
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    window.closeModal = function() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+        document.getElementById('titleId').disabled = false;
+    };
+
+    window.saveTitle = async function(event) {
+        event.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Сохранение...';
+        
+        const editId = document.getElementById('editId').value;
+        const id = document.getElementById('titleId').value.trim();
+        const name = document.getElementById('titleName').value.trim();
+        const nameEn = document.getElementById('titleNameEn').value.trim();
+        const type = document.getElementById('titleType').value;
+        const year = parseInt(document.getElementById('titleYear').value);
+        const episodes = parseInt(document.getElementById('titleEpisodes').value);
+        const rating = parseFloat(document.getElementById('titleRating').value);
+        const genres = document.getElementById('titleGenres').value.split(',').map(s => s.trim()).filter(Boolean);
+        const imageVertical = document.getElementById('titleImageVert').value.trim();
+        const imageHorizontal = document.getElementById('titleImageHoriz').value.trim();
+        const description = document.getElementById('titleDescription').value.trim();
+        
+        let episodesList = [];
+        try {
+            const raw = document.getElementById('titleEpisodesList').value.trim();
+            if (raw) {
+                episodesList = JSON.parse(raw);
+            }
+        } catch (e) {
+            alert('❌ Ошибка в формате JSON списка серий. Проверьте синтаксис.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '💾 Сохранить';
+            return;
+        }
+        
+        const data = {
+            id: id,
+            name: name,
+            nameEn: nameEn,
+            type: type,
+            year: year,
+            episodes: episodes,
+            rating: rating,
+            genres: genres,
+            imageVertical: imageVertical,
+            imageHorizontal: imageHorizontal,
+            description: description,
+            episodesList: episodesList
+        };
+        
+        let result;
+        if (editId) {
+            result = await updateTitle(editId, data);
+        } else {
+            result = await addTitle(data);
+        }
+        
+        if (result.success) {
+            alert('✅ Тайтл сохранён!');
+            closeModal();
+            await loadTitlesFromFirestore();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Сохранить';
+    };
+
+    window.handleDelete = async function(titleId) {
+        if (!confirm(`Удалить тайтл "${allTitles.find(t => t.id === titleId)?.name || titleId}"?`)) return;
+        const result = await deleteTitle(titleId);
+        if (result.success) {
+            alert('✅ Тайтл удалён');
+            await loadTitlesFromFirestore();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
+    window.refreshTitles = async function() {
+        await loadTitlesFromFirestore();
+    };
+
+    async function loadTitlesFromFirestore() {
+        const container = document.getElementById('titles-container');
+        container.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
+        
+        const result = await getTitles();
+        if (result.success) {
+            allTitles = result.titles;
+            renderTitles();
+        } else {
+            container.innerHTML = `<p style="color:#ff6b6b; text-align:center;">❌ Ошибка загрузки: ${result.error}</p>`;
+        }
     }
 
-    onAuthStateChangedListener((user) => {
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+
+    onAuthStateChangedListener(async (user) => {
         updateAuthButton(user);
+        await updateDubInLink(user);
+        await checkAdmin(user);
+        if (user) {
+            await loadTitlesFromFirestore();
+        }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadTitles();
-        updateAuthButton(getCurrentUser());
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        updateAuthButton(user);
+        await updateDubInLink(user);
+        await checkAdmin(user);
+        await loadTitlesFromFirestore();
+        setupFilters();
     });
 </script>
 

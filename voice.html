@@ -6,6 +6,7 @@
     <title>Даббер - foxline Studio</title>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <script type="module" src="firebase-config.js"></script>
     <style>
         .voice-profile {
             display: flex;
@@ -17,7 +18,6 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
         .voice-avatar-large {
             width: 200px;
             height: 200px;
@@ -26,18 +26,15 @@
             border: 5px solid #4c004f;
             box-shadow: 0 0 20px rgba(107, 0, 91, 0.3);
         }
-        
         .voice-info {
             flex: 1;
             min-width: 300px;
         }
-        
         .voice-name {
             font-size: 36px;
             color: #8c0085;
             margin: 0 0 10px 0;
         }
-        
         .voice-status {
             display: inline-block;
             background: linear-gradient(135deg, #460057, #320063);
@@ -47,14 +44,12 @@
             font-size: 14px;
             margin-bottom: 15px;
         }
-        
         .voice-meta {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
             margin: 15px 0;
         }
-        
         .voice-meta-item {
             background: #b600a0;
             padding: 8px 15px;
@@ -62,7 +57,6 @@
             font-size: 14px;
             color: rgb(255, 255, 255);
         }
-        
         .voice-bio {
             background: rgb(138, 0, 106);
             padding: 15px;
@@ -72,14 +66,12 @@
             border-left: 4px solid #ff00cc;
             color: rgb(255, 255, 255);
         }
-        
         .voice-social {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
             margin-top: 15px;
         }
-        
         .social-link {
             display: inline-flex;
             align-items: center;
@@ -92,111 +84,16 @@
             font-size: 19px;
             transition: all 0.3s;
         }
-        
         .social-link:hover {
             background: #d500dc;
             color: white;
         }
-        
-        .titles-section {
-            margin-top: 40px;
-        }
-        
-        .title-card-voice {
-            display: flex;
-            gap: 20px;
-            background: rgb(117, 0, 111);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        .title-card-voice:hover {
-            transform: translateX(10px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .title-card-voice-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-        
-        .title-card-voice-info {
-            flex: 1;
-        }
-        
-        .title-card-voice-name {
-            font-size: 20px;
-            font-weight: bold;
-            color: #e900ba;
-            margin-bottom: 5px;
-        }
-        
-        .roles-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        
-        .role-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .role-badge.main {
-            background: #8c0096;
-            color: white;
-        }
-        
-        .role-badge.recurring {
-            background: #320063;
-            color: white;
-        }
-        
-        .role-badge.supporting {
-            background: #666;
-            color: white;
-        }
-        
-        .role-badge.guest {
-            background: #ffaa00;
-            color: #001a8c;
-        }
-        
-        .role-character {
-            font-weight: bold;
-        }
-        
-        .role-episodes {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .not-found {
-            text-align: center;
-            padding: 50px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-        
         .stats-grid {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
             margin: 20px 0;
         }
-        
         .stat-box {
             flex: 1;
             min-width: 120px;
@@ -206,40 +103,134 @@
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        
         .stat-number {
             font-size: 28px;
             font-weight: bold;
             color: #c100b4;
         }
-        
         .stat-label {
             font-size: 14px;
             color: #666;
         }
-        
+
+        /* Админ-стили */
+        .admin-edit-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .admin-edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .admin-panel {
+            display: none;
+            padding: 20px;
+            background: rgba(208, 0, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid #6d076d;
+            margin-top: 15px;
+        }
+        .admin-panel.active {
+            display: block;
+        }
+        .admin-panel .form-group {
+            margin-bottom: 12px;
+        }
+        .admin-panel .form-group label {
+            color: #aaa;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-panel .form-group input,
+        .admin-panel .form-group textarea,
+        .admin-panel .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid #3a0035;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .admin-panel .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .admin-panel .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-panel .form-row .form-group {
+            flex: 1;
+            min-width: 140px;
+        }
+        .admin-panel .save-btn {
+            padding: 10px 30px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .admin-panel .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .admin-panel .cancel-btn {
+            padding: 10px 30px;
+            background: #3a0035;
+            color: #aaa;
+            border: 2px solid #3a0035;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .admin-panel .cancel-btn:hover {
+            border-color: #6d076d;
+            color: #fff;
+        }
+
         .loading {
             text-align: center;
             padding: 50px;
+            color: #aaa;
         }
-        
-        .loading-spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #001a8c;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
+        .not-found {
+            text-align: center;
+            padding: 50px;
+            color: #aaa;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @media (max-width: 768px) {
+            .voice-avatar-large {
+                width: 130px;
+                height: 130px;
+            }
+            .voice-name {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
 <body>
+
 <header class="fixed-header">
     <div class="nav-buttons">
         <a href="index.html">
@@ -248,15 +239,41 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
 
+<div class="container">
+    <div class="header">
+        <hr>
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <hr>
+    </div>
+    
+    <div class="content-box" id="voice-content">
+        <div class="loading">⏳ Загрузка...</div>
+    </div>
+</div>
+
+<div class="container" style="text-align: center;">
+    <hr>
+    <p>© 2026 foxline Studio</p>
+</div>
+
 <script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener,
+        getUserRole,
+        getVoiceById,
+        updateVoice
+    } from './firebase-config.js';
+
+    const voiceId = new URLSearchParams(window.location.search).get('id');
+    let isAdmin = false;
+    let currentVoice = null;
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -272,119 +289,247 @@
     async function updateDubInLink(user) {
         const link = document.getElementById('dubInLink');
         if (!link) return;
-        
         if (user) {
             const role = await getUserRole(user.uid);
-            if (role === 'dubber' || role === 'admin') {
-                link.style.display = 'inline-flex';
-            } else {
-                link.style.display = 'none';
-            }
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
         } else {
             link.style.display = 'none';
         }
     }
 
+    // ===== АДМИН-ФУНКЦИИ =====
+
+    window.toggleAdminEdit = function() {
+        const panel = document.getElementById('adminEditPanel');
+        panel.classList.toggle('active');
+        if (panel.classList.contains('active')) {
+            fillAdminForm();
+        }
+    };
+
+    function fillAdminForm() {
+        if (!currentVoice) return;
+        const v = currentVoice;
+        document.getElementById('editName').value = v.name || '';
+        document.getElementById('editNameEn').value = v.nameEn || '';
+        document.getElementById('editNameRu').value = v.nameRu || '';
+        document.getElementById('editImage').value = v.image || '';
+        document.getElementById('editRoleType').value = v.roleType || 'dubber';
+        document.getElementById('editStatus').value = v.status || '';
+        document.getElementById('editJoinDate').value = v.joinDate || '';
+        document.getElementById('editBio').value = v.bio || '';
+        document.getElementById('editSocial').value = JSON.stringify(v.social || {}, null, 2);
+    }
+
+    window.saveAdminEdit = async function() {
+        const saveBtn = document.getElementById('saveEditBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ Сохранение...';
+        
+        let social = {};
+        try {
+            const raw = document.getElementById('editSocial').value.trim();
+            if (raw) {
+                social = JSON.parse(raw);
+            }
+        } catch (e) {
+            alert('❌ Ошибка в формате JSON соцсетей. Проверьте синтаксис.');
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Сохранить';
+            return;
+        }
+        
+        const data = {
+            name: document.getElementById('editName').value.trim(),
+            nameEn: document.getElementById('editNameEn').value.trim(),
+            nameRu: document.getElementById('editNameRu').value.trim(),
+            image: document.getElementById('editImage').value.trim(),
+            roleType: document.getElementById('editRoleType').value,
+            status: document.getElementById('editStatus').value.trim(),
+            joinDate: document.getElementById('editJoinDate').value.trim() || '2026',
+            bio: document.getElementById('editBio').value.trim(),
+            social: social
+        };
+        
+        const result = await updateVoice(voiceId, data);
+        if (result.success) {
+            alert('✅ Профиль даббера обновлён!');
+            document.getElementById('adminEditPanel').classList.remove('active');
+            await loadVoice();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+        
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Сохранить изменения';
+    };
+
+    // ===== ОСНОВНАЯ ЗАГРУЗКА =====
+
+    async function loadVoice() {
+        const container = document.getElementById('voice-content');
+        container.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
+        
+        // Загружаем из Firestore
+        const result = await getVoiceById(voiceId);
+        
+        if (!result.success || !result.data) {
+            // Пробуем из data.js
+            const localVoice = window.getVoiceById?.(voiceId);
+            if (localVoice) {
+                currentVoice = localVoice;
+            } else {
+                container.innerHTML = '<div class="not-found">❌ Даббер не найден</div>';
+                return;
+            }
+        } else {
+            currentVoice = result.data;
+        }
+        
+        const voice = currentVoice;
+        
+        // Получаем тайтлы и роли
+        const titles = window.getTitlesByVoiceId?.(voiceId) || [];
+        const stats = window.getVoiceStats?.(voiceId) || { totalTitles: titles.length, totalRoles: 0, mainRoles: 0 };
+        
+        let socialHtml = '';
+        if (voice.social) {
+            if (voice.social.telegram) socialHtml += `<a href="https://t.me/${voice.social.telegram}" target="_blank" class="social-link">📱 Telegram</a>`;
+            if (voice.social.vk) socialHtml += `<a href="https://vk.com/${voice.social.vk}" target="_blank" class="social-link">📘 VK</a>`;
+            if (voice.social.github) socialHtml += `<a href="https://github.com/${voice.social.github}" target="_blank" class="social-link">🐙 GitHub</a>`;
+        }
+        
+        let titlesHtml = '';
+        if (titles.length > 0) {
+            titlesHtml = '<h2 class="title">Участие в проектах</h2>';
+            titles.forEach(title => {
+                const roles = title.roles || [];
+                titlesHtml += `
+                    <a href="title.html?id=${title.id}" class="title-card-voice">
+                        <img src="${title.image}" class="title-card-voice-image" onerror="this.src='https://via.placeholder.com/80/3a0035/fff?text=?'">
+                        <div>
+                            <div class="title-card-voice-name">${title.name}</div>
+                            <div class="roles-list">
+                                ${roles.map(r => `<span class="role-badge ${r.type}">${r.character}</span>`).join('')}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+
+        // Админ-панель редактирования
+        let adminHtml = '';
+        if (isAdmin) {
+            adminHtml = `
+                <button class="admin-edit-btn" onclick="toggleAdminEdit()">✏️ Редактировать профиль</button>
+                <div id="adminEditPanel" class="admin-panel">
+                    <h3 style="color:#d000ff;">✏️ Редактирование профиля</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Имя</label>
+                            <input type="text" id="editName">
+                        </div>
+                        <div class="form-group">
+                            <label>Имя (англ.)</label>
+                            <input type="text" id="editNameEn">
+                        </div>
+                        <div class="form-group">
+                            <label>Имя (рус.)</label>
+                            <input type="text" id="editNameRu">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Ссылка на аватарку</label>
+                        <input type="text" id="editImage">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Тип роли</label>
+                            <select id="editRoleType">
+                                <option value="dubber">Даббер</option>
+                                <option value="tech">Тех. персонал</option>
+                                <option value="both">И даббер, и тех.</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Статус</label>
+                            <input type="text" id="editStatus">
+                        </div>
+                        <div class="form-group">
+                            <label>Год присоединения</label>
+                            <input type="text" id="editJoinDate">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Биография</label>
+                        <textarea id="editBio"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Соцсети (JSON)</label>
+                        <textarea id="editSocial" style="min-height:60px;"></textarea>
+                        <small style="color:#666;">Формат: {"telegram":"username","vk":"id","github":"username"}</small>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <button class="save-btn" id="saveEditBtn" onclick="saveAdminEdit()">💾 Сохранить изменения</button>
+                        <button class="cancel-btn" onclick="document.getElementById('adminEditPanel').classList.remove('active')">Отмена</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            <div class="voice-profile">
+                <img src="${voice.image || 'https://via.placeholder.com/200/3a0035/fff?text=?'}" class="voice-avatar-large" onerror="this.src='https://via.placeholder.com/200/3a0035/fff?text=?'">
+                <div class="voice-info">
+                    <h1 class="voice-name">${voice.name}</h1>
+                    <span class="voice-status">${voice.status || 'Даббер'}</span>
+                    <div class="voice-meta">
+                        <span class="voice-meta-item">📅 В команде с ${voice.joinDate || '?'}</span>
+                        <span class="voice-meta-item">🎭 ${stats.totalRoles} ролей</span>
+                        <span class="voice-meta-item">🎬 ${stats.totalTitles} проектов</span>
+                    </div>
+                    ${voice.bio ? `<div class="voice-bio">${voice.bio}</div>` : ''}
+                    ${socialHtml ? `<div class="voice-social">${socialHtml}</div>` : ''}
+                    ${adminHtml}
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-number">${stats.totalTitles}</div><div class="text">Проектов</div></div>
+                <div class="stat-box"><div class="stat-number">${stats.totalRoles}</div><div class="text">Всего ролей</div></div>
+                <div class="stat-box"><div class="stat-number">${stats.mainRoles}</div><div class="text">Главных ролей</div></div>
+            </div>
+            
+            ${titlesHtml}
+        `;
+    }
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+
     onAuthStateChangedListener(async (user) => {
         updateAuthButton(user);
         await updateDubInLink(user);
+        if (user) {
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+        } else {
+            isAdmin = false;
+        }
+        await loadVoice();
     });
 
-    // При загрузке страницы
     document.addEventListener('DOMContentLoaded', async () => {
         const user = getCurrentUser();
         updateAuthButton(user);
         await updateDubInLink(user);
+        if (user) {
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+        }
+        await loadVoice();
     });
 </script>
 
-    <div class="container">
-        <div class="header">
-            <hr>
-            <img src="logo2.jpg" alt="foxline Studio" class="avatar" width="240" height="240">
-            <hr>
-        </div>
-        
-        <div class="content-box" id="voice-content">
-            <div class="loading">Загрузка...</div>
-        </div>
-    </div>
-
-    <div class="container" style="text-align: center;">
-        <hr>
-        <p>© 2026 foxline Studio</p>
-    </div>
-
-    <script>
-        const voiceId = new URLSearchParams(window.location.search).get('id');
-        
-        function loadVoice() {
-            const container = document.getElementById('voice-content');
-            setTimeout(() => {
-                const voice = window.getVoiceById?.(voiceId);
-                
-                if (!voice) {
-                    container.innerHTML = '<div style="text-align:center; padding:50px;">❌ Даббер не найден</div>';
-                    return;
-                }
-                
-                const titles = window.getTitlesByVoiceId?.(voiceId) || [];
-                const stats = window.getVoiceStats?.(voiceId) || { totalTitles: titles.length, totalRoles: 0, mainRoles: 0 };
-                
-                let socialHtml = '';
-                if (voice.social) {
-                    if (voice.social.telegram) socialHtml += `<a href="https://t.me/${voice.social.telegram}" target="_blank" class="social-link">📱 Telegram</a>`;
-                    if (voice.social.vk) socialHtml += `<a href="https://vk.com/${voice.social.vk}" target="_blank" class="social-link">📘 VK</a>`;
-                    if (voice.social.github) socialHtml += `<a href="https://github.com/${voice.social.github}" target="_blank" class="social-link">🐙 GitHub</a>`;
-                }
-                
-                let titlesHtml = '';
-                if (titles.length > 0) {
-                    titlesHtml = '<h2 class="title">Участие в проектах</h2>';
-                    titles.forEach(title => {
-                        const roles = title.roles || [];
-                        titlesHtml += `
-                            <a href="title.html?id=${title.id}" class="title-card-voice">
-                                <img src="${title.image}" class="title-card-voice-image" onerror="this.src='https://via.placeholder.com/80/001a8c/ffffff'">
-                                <div>
-                                    <div class="title-card-voice-name">${title.name}</div>
-                                    <div class="roles-list">
-                                        ${roles.map(r => `<span class="role-badge ${r.type}">${r.character}</span>`).join('')}
-                                    </div>
-                                </div>
-                            </a>
-                        `;
-                    });
-                }
-                
-                container.innerHTML = `
-                    <div class="voice-profile">
-                        <img src="${voice.image}" class="voice-avatar-large" onerror="this.src='https://via.placeholder.com/200/001a8c/ffffff'">
-                        <div>
-                            <h1 class="voice-name">${voice.name}</h1>
-                            <span class="voice-status">${voice.status}</span>
-                            <div class="voice-meta">
-                                <span class="voice-meta-item">📅 В команде с ${voice.joinDate}</span>
-                                <span class="voice-meta-item">🎭 ${stats.totalRoles} ролей</span>
-                                <span class="voice-meta-item">🎬 ${stats.totalTitles} проектов</span>
-                            </div>
-                            ${voice.bio ? `<div class="voice-bio">${voice.bio}</div>` : ''}
-                            ${socialHtml ? `<div class="voice-social">${socialHtml}</div>` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-box"><div class="stat-number">${stats.totalTitles}</div><div class="text">Проектов</div></div>
-                        <div class="stat-box"><div class="stat-number">${stats.totalRoles}</div><div class="text">Всего ролей</div></div>
-                        <div class="stat-box"><div class="stat-number">${stats.mainRoles}</div><div class="text">Главных ролей</div></div>
-                    </div>
-                    
-                    ${titlesHtml}
-                `;
-            }, 100);
-        }
-        
-        document.addEventListener('DOMContentLoaded', loadVoice);
-    </script>
 </body>
 </html>

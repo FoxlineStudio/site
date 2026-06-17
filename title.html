@@ -19,6 +19,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .comment-user {
             display: flex;
@@ -26,14 +28,27 @@
             gap: 10px;
         }
         .comment-avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 2px solid transparent;
+        }
+        .comment-avatar:hover {
+            transform: scale(1.1);
+            border-color: #d000ff;
         }
         .comment-name {
             color: #d000ff;
             font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .comment-name:hover {
+            color: #ff44dd;
+            text-decoration: underline;
         }
         .comment-rating {
             color: #ffaa00;
@@ -41,6 +56,18 @@
         .comment-text {
             color: #fff;
             margin-top: 8px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .comment-text .mention {
+            color: #d000ff;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .comment-text .mention:hover {
+            color: #ff44dd;
+            text-decoration: underline;
         }
         .comment-time {
             color: #666;
@@ -54,10 +81,12 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 12px;
+            transition: background 0.3s;
         }
         .comment-delete:hover {
             background: #8a0a8a;
         }
+
         .comment-form {
             display: flex;
             flex-wrap: wrap;
@@ -116,6 +145,13 @@
             cursor: not-allowed;
             transform: none;
         }
+        .comment-form .hint {
+            color: #666;
+            font-size: 12px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
         .no-comments {
             color: #aaa;
             text-align: center;
@@ -136,6 +172,165 @@
         .auth-prompt a:hover {
             text-decoration: underline;
         }
+
+        /* Админ-стили */
+        .admin-edit-btn {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .admin-edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+
+        .admin-panel {
+            display: none;
+            padding: 20px;
+            background: rgba(208, 0, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid #6d076d;
+            margin-top: 15px;
+        }
+        .admin-panel.active {
+            display: block;
+        }
+        .admin-panel .form-group {
+            margin-bottom: 12px;
+        }
+        .admin-panel .form-group label {
+            color: #aaa;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-panel .form-group input,
+        .admin-panel .form-group textarea,
+        .admin-panel .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid #3a0035;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .admin-panel .form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        .admin-panel .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .admin-panel .form-row .form-group {
+            flex: 1;
+            min-width: 140px;
+        }
+        .admin-panel .save-btn {
+            padding: 10px 30px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .admin-panel .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
+        }
+        .admin-panel .cancel-btn {
+            padding: 10px 30px;
+            background: #3a0035;
+            color: #aaa;
+            border: 2px solid #3a0035;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .admin-panel .cancel-btn:hover {
+            border-color: #6d076d;
+            color: #fff;
+        }
+        .admin-panel .episode-item-edit {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 8px;
+            background: rgba(58, 0, 53, 0.2);
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .admin-panel .episode-item-edit input {
+            flex: 1;
+            min-width: 80px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .admin-panel .episode-item-edit .remove-ep-btn {
+            background: #6d0000;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .admin-panel .add-ep-btn {
+            padding: 6px 16px;
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .admin-panel .add-ep-btn:hover {
+            background: #8a0a8a;
+        }
+
+        .avg-rating {
+            display: inline-block;
+            background: rgba(208, 0, 255, 0.15);
+            padding: 4px 16px;
+            border-radius: 25px;
+            border: 1px solid #6d076d;
+            margin-left: 10px;
+            font-size: 14px;
+            color: #ffaa00;
+        }
+
+        @media (max-width: 768px) {
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .comment-user {
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 <body>
@@ -148,55 +343,11 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
-        <!-- DUB-in будет показываться только для дабберов и админов -->
         <a href="dub-in.html" class="nav-icon-btn" id="dubInLink" style="display:none;">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
 </header>
-
-<script type="module">
-    import { getCurrentUser, onAuthStateChangedListener, getUserRole } from './firebase-config.js';
-
-    function updateAuthButton(user) {
-        const btn = document.getElementById('authBtn');
-        if (user) {
-            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
-            btn.href = 'profile.html';
-        } else {
-            btn.textContent = '🔑 Вход';
-            btn.href = 'login.html';
-        }
-    }
-
-    async function updateDubInLink(user) {
-        const link = document.getElementById('dubInLink');
-        if (!link) return;
-        
-        if (user) {
-            const role = await getUserRole(user.uid);
-            if (role === 'dubber' || role === 'admin') {
-                link.style.display = 'inline-flex';
-            } else {
-                link.style.display = 'none';
-            }
-        } else {
-            link.style.display = 'none';
-        }
-    }
-
-    onAuthStateChangedListener(async (user) => {
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-
-    // При загрузке страницы
-    document.addEventListener('DOMContentLoaded', async () => {
-        const user = getCurrentUser();
-        updateAuthButton(user);
-        await updateDubInLink(user);
-    });
-</script>
 
 <div class="container">
     <div class="header">
@@ -218,13 +369,23 @@
     import { 
         getCurrentUser, 
         onAuthStateChangedListener,
+        getUserRole,
+        getTitleById,
+        updateTitle,
         addComment,
         getComments,
-        deleteComment
+        deleteComment,
+        getAverageRating,
+        trackView,
+        getUserByEmail,
+        getUserData
     } from './firebase-config.js';
 
     const titleId = new URLSearchParams(window.location.search).get('id');
     let currentUser = null;
+    let isAdmin = false;
+    let currentTitle = null;
+    let allComments = [];
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -237,6 +398,72 @@
         }
     }
 
+    async function updateDubInLink(user) {
+        const link = document.getElementById('dubInLink');
+        if (!link) return;
+        if (user) {
+            const role = await getUserRole(user.uid);
+            link.style.display = (role === 'dubber' || role === 'admin') ? 'inline-flex' : 'none';
+        } else {
+            link.style.display = 'none';
+        }
+    }
+
+    // ===== КОММЕНТАРИИ =====
+
+    function renderComments(comments) {
+        const container = document.getElementById('comments-list');
+        if (!container) return;
+        
+        if (!comments || comments.length === 0) {
+            container.innerHTML = '<div class="no-comments">💬 Пока нет комментариев. Будьте первым!</div>';
+            return;
+        }
+        
+        const user = getCurrentUser();
+        container.innerHTML = comments.map(c => {
+            const isOwner = user && c.uid === user.uid;
+            
+            // Обработка @упоминаний
+            let textHtml = c.text || '';
+            if (c.mentions) {
+                c.mentions.forEach(email => {
+                    textHtml = textHtml.replace(
+                        new RegExp(`@${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g'),
+                        `<a href="profile.html?email=${encodeURIComponent(email)}" class="mention">@${email}</a>`
+                    );
+                });
+            }
+            
+            // Безопасная обработка текста (экранирование)
+            textHtml = textHtml.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Восстанавливаем ссылки
+            textHtml = textHtml.replace(
+                /&lt;a href="profile\.html\?email=([^"]+)" class="mention"&gt;@([^&]+)&lt;\/a&gt;/g,
+                `<a href="profile.html?email=$1" class="mention">@$2</a>`
+            );
+            
+            const avatarHtml = c.photoURL ? 
+                `<a href="profile.html?uid=${c.uid}"><img src="${c.photoURL}" class="comment-avatar" onerror="this.style.display='none'"></a>` : 
+                `<a href="profile.html?uid=${c.uid}"><div style="width:36px;height:36px;border-radius:50%;background:#3a0035;display:flex;align-items:center;justify-content:center;color:#d000ff;font-size:16px;cursor:pointer;">👤</div></a>`;
+            
+            return `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-user">
+                            ${avatarHtml}
+                            <a href="profile.html?uid=${c.uid}" class="comment-name">${c.name || 'Аноним'}</a>
+                            <span class="comment-rating">${'⭐'.repeat(Math.min(c.rating || 5, 5))}</span>
+                        </div>
+                        ${isOwner ? `<button class="comment-delete" onclick="handleDeleteComment('${c.id}')">🗑️</button>` : ''}
+                    </div>
+                    <div class="comment-text">${textHtml}</div>
+                    <div class="comment-time">${c.time ? new Date(c.time.seconds * 1000).toLocaleString() : 'Только что'}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
     async function loadComments() {
         const container = document.getElementById('comments-list');
         if (!container) return;
@@ -245,34 +472,8 @@
         
         try {
             const comments = await getComments(titleId);
-            
-            if (!comments || comments.length === 0) {
-                container.innerHTML = '<div class="no-comments">💬 Пока нет комментариев. Будьте первым!</div>';
-                return;
-            }
-            
-            const user = getCurrentUser();
-            container.innerHTML = comments.map(c => {
-                const isOwner = user && c.uid === user.uid;
-                const avatarHtml = c.photoURL ? 
-                    `<img src="${c.photoURL}" class="comment-avatar" onerror="this.style.display='none'">` : 
-                    `<div style="width:32px;height:32px;border-radius:50%;background:#3a0035;display:flex;align-items:center;justify-content:center;color:#d000ff;font-size:16px;">👤</div>`;
-                
-                return `
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <div class="comment-user">
-                                ${avatarHtml}
-                                <span class="comment-name">${c.name || 'Аноним'}</span>
-                                <span class="comment-rating">${'⭐'.repeat(c.rating || 5)}</span>
-                            </div>
-                            ${isOwner ? `<button class="comment-delete" onclick="handleDeleteComment('${c.id}')">🗑️</button>` : ''}
-                        </div>
-                        <div class="comment-text">${c.text}</div>
-                        <div class="comment-time">${c.time ? new Date(c.time.seconds * 1000).toLocaleString() : 'Только что'}</div>
-                    </div>
-                `;
-            }).join('');
+            allComments = comments;
+            renderComments(comments);
         } catch (error) {
             console.error('Ошибка загрузки комментариев:', error);
             container.innerHTML = `<div class="no-comments" style="color:#ff6b6b;">❌ Ошибка загрузки комментариев</div>`;
@@ -297,6 +498,8 @@
         if (result.success) {
             text.value = '';
             await loadComments();
+            // Обновляем среднюю оценку
+            await updateAverageRating();
         } else {
             alert('❌ Ошибка: ' + result.error);
         }
@@ -307,10 +510,10 @@
 
     window.handleDeleteComment = async function(commentId) {
         if (!confirm('Удалить комментарий?')) return;
-        
         const result = await deleteComment(commentId);
         if (result.success) {
             await loadComments();
+            await updateAverageRating();
         } else {
             alert('❌ Ошибка: ' + result.error);
         }
@@ -326,7 +529,7 @@
             container.innerHTML = `
                 <h2 style="color:#d000ff; margin-top:30px;">💬 Комментарии</h2>
                 <div class="comment-form">
-                    <textarea id="commentText" placeholder="Напишите ваш комментарий..."></textarea>
+                    <textarea id="commentText" placeholder="Напишите ваш комментарий... (используйте @email для отметки)"></textarea>
                     <div class="form-actions">
                         <select id="commentRating">
                             <option value="5">⭐⭐⭐⭐⭐</option>
@@ -337,6 +540,7 @@
                         </select>
                         <button onclick="handleAddComment()">📤 Отправить</button>
                     </div>
+                    <div class="hint">💡 Используйте <strong style="color:#d000ff;">@email</strong> чтобы отметить пользователя</div>
                 </div>
                 <div id="comments-list"></div>
             `;
@@ -350,103 +554,135 @@
             `;
         }
         
-        // Загружаем комментарии
         loadComments();
     }
 
-    function loadTitle() {
-        const content = document.getElementById('title-content');
+    // ===== СРЕДНЯЯ ОЦЕНКА =====
+
+    async function updateAverageRating() {
+        const container = document.getElementById('avgRatingContainer');
+        if (!container) return;
         
-        setTimeout(async () => {
-            const title = window.getTitleById?.(titleId) || window.titlesDatabase?.find(t => t.id === titleId);
-            
-            if (!title) {
-                content.innerHTML = '<div style="text-align:center; padding:50px; color:#fff;">❌ Тайтл не найден</div>';
-                return;
-            }
-
-            // Получаем роли
-            const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
-            
-            let charactersHtml = '';
-            if (roles.length > 0) {
-                charactersHtml = '<h2 style="color:#d000ff; margin-top:30px;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
-                roles.forEach(role => {
-                    const voice = window.voicesDatabase?.find(v => v.id === role.voiceId);
-                    charactersHtml += `
-                        <div class="character-card">
-                            <img src="${role.characterImage || 'https://via.placeholder.com/180x150/3a0035/fff?text=Персонаж'}" class="character-image" onerror="this.src='https://via.placeholder.com/180x150/3a0035/fff?text=?'">
-                            <div class="character-name">${role.character}</div>
-                            <p style="color:#aaa;">Озвучивает: <a href="voice.html?id=${role.voiceId}" style="color:#d000ff;">${voice?.name || role.voiceId}</a></p>
-                        </div>
-                    `;
-                });
-                charactersHtml += '</div>';
-            }
-
-            // Список серий
-            const episodes = title.episodesList || [];
-            let episodesHtml = '';
-            if (episodes.length > 0) {
-                episodesHtml = `
-                    <h2 style="color:#d000ff; margin-top:30px;">📺 Список серий</h2>
-                    <div class="episodes-list">
-                        ${episodes.map(ep => `
-                            <div class="episode-item" onclick="playEpisode('${ep.url}')" style="cursor:pointer;">
-                                <span class="episode-number">Серия ${ep.number}</span>
-                                <span class="episode-title" style="color:#fff;">${ep.title}</span>
-                                <span class="episode-status ${ep.status === 'Озвучено' ? 'status-ready' : 'status-soon'}">${ep.status}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-
-            // Плеер
-            const firstEpisode = episodes.find(ep => ep.url) || { url: '' };
-            const posterImage = title.imageVertical || title.imageVertical || title.image;
-
-            content.innerHTML = `
-                <div class="anime-header">
-                    <img src="${posterImage}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
-                    <div class="anime-info">
-                        <h1 class="anime-title" style="color:#d000ff;">${title.name}</h1>
-                        <div class="anime-meta">
-                            <span class="anime-tag">${title.type || 'Аниме'}</span>
-                            <span class="anime-tag">${title.year || '2025'}</span>
-                            <span class="anime-tag">${title.episodes || '?'} серий</span>
-                            <span class="anime-tag">⭐ ${title.rating || '4.5'}</span>
-                        </div>
-                        <p style="color:#fff;"><strong style="color:#d000ff;">Жанры:</strong> ${title.genres?.join(', ') || 'Не указаны'}</p>
-                        <div class="anime-description" style="color:#ccc;">${title.description || 'Описание отсутствует'}</div>
-                    </div>
-                </div>
-                
-                <h2 style="color:#d000ff;">▶ Смотреть онлайн</h2>
-                <div class="player-container" id="playerContainer">
-                    ${firstEpisode.url ? `
-                        <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
-                    ` : `
-                        <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
-                            <p>Скоро появится</p>
-                        </div>
-                    `}
-                </div>
-                
-                ${episodesHtml}
-                
-                ${charactersHtml}
-                
-                <div id="comments-container"></div>
-            `;
-
-            // Рендерим форму комментариев
-            renderCommentForm();
-            
-        }, 100);
+        const avg = await getAverageRating(titleId);
+        if (avg > 0) {
+            container.innerHTML = `⭐ ${avg.toFixed(1)} (${allComments.length} оценок)`;
+            container.style.display = 'inline-block';
+        } else {
+            container.style.display = 'none';
+        }
     }
 
-    window.playEpisode = function(url) {
+    // ===== ПРОСМОТРЫ =====
+
+    async function trackViewEpisode(episodeNumber) {
+        const user = getCurrentUser();
+        if (user) {
+            await trackView(user.uid, titleId, episodeNumber);
+        }
+    }
+
+    // ===== АДМИН-ФУНКЦИИ =====
+
+    window.toggleAdminEdit = function() {
+        const panel = document.getElementById('adminEditPanel');
+        panel.classList.toggle('active');
+        if (panel.classList.contains('active')) {
+            fillAdminForm();
+        }
+    };
+
+    function fillAdminForm() {
+        if (!currentTitle) return;
+        const t = currentTitle;
+        document.getElementById('editName').value = t.name || '';
+        document.getElementById('editNameEn').value = t.nameEn || '';
+        document.getElementById('editType').value = t.type || 'Сериал';
+        document.getElementById('editYear').value = t.year || '';
+        document.getElementById('editEpisodes').value = t.episodes || '';
+        document.getElementById('editRating').value = t.rating || '';
+        document.getElementById('editGenres').value = (t.genres || []).join(', ');
+        document.getElementById('editImageVert').value = t.imageVertical || '';
+        document.getElementById('editImageHoriz').value = t.imageHorizontal || '';
+        document.getElementById('editDescription').value = t.description || '';
+        renderEpisodeEditor(t.episodesList || []);
+    }
+
+    function renderEpisodeEditor(episodes) {
+        const container = document.getElementById('episodesEditor');
+        container.innerHTML = episodes.map((ep, index) => `
+            <div class="episode-item-edit">
+                <input type="number" value="${ep.number}" placeholder="№" style="width:50px;" data-index="${index}" data-field="number">
+                <input type="text" value="${ep.title || ''}" placeholder="Название" data-index="${index}" data-field="title">
+                <input type="text" value="${ep.url || ''}" placeholder="Ссылка" data-index="${index}" data-field="url">
+                <input type="text" value="${ep.status || 'Скоро'}" placeholder="Статус" style="width:100px;" data-index="${index}" data-field="status">
+                <button class="remove-ep-btn" onclick="removeEpisode(${index})">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.removeEpisode = function(index) {
+        const episodes = getEpisodesFromEditor();
+        episodes.splice(index, 1);
+        renderEpisodeEditor(episodes);
+    };
+
+    window.addEpisode = function() {
+        const episodes = getEpisodesFromEditor();
+        episodes.push({ number: episodes.length + 1, title: '', url: '', status: 'Скоро' });
+        renderEpisodeEditor(episodes);
+    };
+
+    function getEpisodesFromEditor() {
+        const container = document.getElementById('episodesEditor');
+        const inputs = container.querySelectorAll('.episode-item-edit');
+        const episodes = [];
+        inputs.forEach(el => {
+            const number = parseInt(el.querySelector('[data-field="number"]').value) || 0;
+            const title = el.querySelector('[data-field="title"]').value || '';
+            const url = el.querySelector('[data-field="url"]').value || '';
+            const status = el.querySelector('[data-field="status"]').value || 'Скоро';
+            episodes.push({ number, title, url, status });
+        });
+        return episodes;
+    }
+
+    window.saveAdminEdit = async function() {
+        const saveBtn = document.getElementById('saveEditBtn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳ Сохранение...';
+        
+        const episodes = getEpisodesFromEditor();
+        
+        const data = {
+            name: document.getElementById('editName').value.trim(),
+            nameEn: document.getElementById('editNameEn').value.trim(),
+            type: document.getElementById('editType').value,
+            year: parseInt(document.getElementById('editYear').value) || 0,
+            episodes: parseInt(document.getElementById('editEpisodes').value) || 0,
+            rating: parseFloat(document.getElementById('editRating').value) || 0,
+            genres: document.getElementById('editGenres').value.split(',').map(s => s.trim()).filter(Boolean),
+            imageVertical: document.getElementById('editImageVert').value.trim(),
+            imageHorizontal: document.getElementById('editImageHoriz').value.trim(),
+            description: document.getElementById('editDescription').value.trim(),
+            episodesList: episodes
+        };
+        
+        const result = await updateTitle(titleId, data);
+        if (result.success) {
+            alert('✅ Тайтл обновлён!');
+            document.getElementById('adminEditPanel').classList.remove('active');
+            await loadTitle();
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+        
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Сохранить изменения';
+    };
+
+    // ===== ПЛЕЕР =====
+
+    window.playEpisode = function(url, episodeNumber) {
         const container = document.getElementById('playerContainer');
         if (!url) {
             container.innerHTML = `
@@ -459,19 +695,220 @@
         container.innerHTML = `
             <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
         `;
+        // Отслеживаем просмотр
+        if (episodeNumber) {
+            trackViewEpisode(episodeNumber);
+        }
     };
 
-    // Подписка на изменения авторизации
-    onAuthStateChangedListener((user) => {
+    // ===== ОСНОВНАЯ ЗАГРУЗКА =====
+
+    async function loadTitle() {
+        const content = document.getElementById('title-content');
+        content.innerHTML = '<div class="loading">⏳ Загрузка...</div>';
+        
+        // Загружаем из Firestore
+        const result = await getTitleById(titleId);
+        
+        if (!result.success || !result.data) {
+            const localTitle = window.getTitleById?.(titleId) || window.titlesDatabase?.find(t => t.id === titleId);
+            if (localTitle) {
+                currentTitle = localTitle;
+            } else {
+                content.innerHTML = '<div style="text-align:center; padding:50px; color:#fff;">❌ Тайтл не найден</div>';
+                return;
+            }
+        } else {
+            currentTitle = result.data;
+        }
+        
+        const title = currentTitle;
+        
+        // Получаем роли
+        const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
+        
+        let charactersHtml = '';
+        if (roles.length > 0) {
+            charactersHtml = '<h2 style="color:#d000ff; margin-top:30px;">🎭 Персонажи и озвучка</h2><div class="characters-grid">';
+            roles.forEach(role => {
+                const voice = window.voicesDatabase?.find(v => v.id === role.voiceId);
+                charactersHtml += `
+                    <div class="character-card">
+                        <img src="${role.characterImage || 'https://via.placeholder.com/180x150/3a0035/fff?text=Персонаж'}" class="character-image" onerror="this.src='https://via.placeholder.com/180x150/3a0035/fff?text=?'">
+                        <div class="character-name">${role.character}</div>
+                        <p style="color:#aaa;">Озвучивает: <a href="voice.html?id=${role.voiceId}" style="color:#d000ff;">${voice?.name || role.voiceId}</a></p>
+                    </div>
+                `;
+            });
+            charactersHtml += '</div>';
+        }
+
+        // Список серий
+        const episodes = title.episodesList || [];
+        let episodesHtml = '';
+        if (episodes.length > 0) {
+            episodesHtml = `
+                <h2 style="color:#d000ff; margin-top:30px;">📺 Список серий</h2>
+                <div class="episodes-list">
+                    ${episodes.map(ep => `
+                        <div class="episode-item" onclick="playEpisode('${ep.url}', ${ep.number})" style="cursor:pointer;">
+                            <span class="episode-number">Серия ${ep.number}</span>
+                            <span class="episode-title" style="color:#fff;">${ep.title}</span>
+                            <span class="episode-status ${ep.status === 'Озвучено' ? 'status-ready' : 'status-soon'}">${ep.status}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Плеер
+        const firstEpisode = episodes.find(ep => ep.url) || { url: '', number: 1 };
+        const posterImage = title.imageHorizontal || title.imageVertical || title.image || 'https://via.placeholder.com/250/3a0035/fff?text=No+Image';
+
+        // Средняя оценка
+        const avgRating = await getAverageRating(titleId);
+        const avgRatingHtml = avgRating > 0 ? 
+            `<span class="avg-rating" id="avgRatingContainer">⭐ ${avgRating.toFixed(1)} (${allComments.length} оценок)</span>` : 
+            `<span class="avg-rating" id="avgRatingContainer" style="display:none;"></span>`;
+
+        // Админ-панель
+        let adminHtml = '';
+        if (isAdmin) {
+            adminHtml = `
+                <button class="admin-edit-btn" onclick="toggleAdminEdit()">✏️ Редактировать тайтл</button>
+                <div id="adminEditPanel" class="admin-panel">
+                    <h3 style="color:#d000ff;">✏️ Редактирование тайтла</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Название (рус.)</label>
+                            <input type="text" id="editName">
+                        </div>
+                        <div class="form-group">
+                            <label>Название (англ.)</label>
+                            <input type="text" id="editNameEn">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Тип</label>
+                            <select id="editType">
+                                <option value="Сериал">Сериал</option>
+                                <option value="Фильм">Фильм</option>
+                                <option value="Короткометражка">Короткометражка</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Год</label>
+                            <input type="number" id="editYear">
+                        </div>
+                        <div class="form-group">
+                            <label>Серий</label>
+                            <input type="number" id="editEpisodes">
+                        </div>
+                        <div class="form-group">
+                            <label>Рейтинг</label>
+                            <input type="number" id="editRating" step="0.1" min="0" max="5">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Жанры (через запятую)</label>
+                        <input type="text" id="editGenres">
+                    </div>
+                    <div class="form-group">
+                        <label>Вертикальная обложка</label>
+                        <input type="text" id="editImageVert">
+                    </div>
+                    <div class="form-group">
+                        <label>Горизонтальная обложка</label>
+                        <input type="text" id="editImageHoriz">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea id="editDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Список серий</label>
+                        <div id="episodesEditor"></div>
+                        <button type="button" class="add-ep-btn" onclick="addEpisode()">➕ Добавить серию</button>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:15px;">
+                        <button class="save-btn" id="saveEditBtn" onclick="saveAdminEdit()">💾 Сохранить изменения</button>
+                        <button class="cancel-btn" onclick="document.getElementById('adminEditPanel').classList.remove('active')">Отмена</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        content.innerHTML = `
+            <div class="anime-header">
+                <img src="${posterImage}" alt="${title.name}" class="anime-poster" onerror="this.src='https://via.placeholder.com/250/3a0035/fff?text=${title.name}'">
+                <div class="anime-info">
+                    <h1 class="anime-title" style="color:#d000ff;">
+                        ${title.name}
+                        ${avgRatingHtml}
+                    </h1>
+                    <div class="anime-meta">
+                        <span class="anime-tag">${title.type || 'Аниме'}</span>
+                        <span class="anime-tag">${title.year || '2025'}</span>
+                        <span class="anime-tag">${title.episodes || '?'} серий</span>
+                        <span class="anime-tag">⭐ ${title.rating || '4.5'}</span>
+                    </div>
+                    <p style="color:#fff;"><strong style="color:#d000ff;">Жанры:</strong> ${title.genres?.join(', ') || 'Не указаны'}</p>
+                    <div class="anime-description" style="color:#ccc;">${title.description || 'Описание отсутствует'}</div>
+                    ${adminHtml}
+                </div>
+            </div>
+            
+            <h2 style="color:#d000ff;">▶ Смотреть онлайн</h2>
+            <div class="player-container" id="playerContainer">
+                ${firstEpisode.url ? `
+                    <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
+                ` : `
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
+                        <p>Скоро появится</p>
+                    </div>
+                `}
+            </div>
+            
+            ${episodesHtml}
+            
+            ${charactersHtml}
+            
+            <div id="comments-container"></div>
+        `;
+
+        // Рендерим форму комментариев
+        renderCommentForm();
+        // Обновляем среднюю оценку после загрузки комментариев
+        setTimeout(updateAverageRating, 500);
+    }
+
+    // ===== ИНИЦИАЛИЗАЦИЯ =====
+
+    onAuthStateChangedListener(async (user) => {
         currentUser = user;
         updateAuthButton(user);
-        // Обновляем форму комментариев
-        if (document.getElementById('comments-container')) {
-            renderCommentForm();
+        await updateDubInLink(user);
+        if (user) {
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+        } else {
+            isAdmin = false;
         }
+        await loadTitle();
     });
 
-    document.addEventListener('DOMContentLoaded', loadTitle);
+    document.addEventListener('DOMContentLoaded', async () => {
+        const user = getCurrentUser();
+        currentUser = user;
+        updateAuthButton(user);
+        await updateDubInLink(user);
+        if (user) {
+            const role = await getUserRole(user.uid);
+            isAdmin = role === 'admin';
+        }
+        await loadTitle();
+    });
 </script>
 
 </body>
