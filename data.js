@@ -56,8 +56,8 @@ const titlesDatabase = [
         id: 'trapezoid',
         name: 'Трапеция',
         nameEn: 'Trapezoid',
-        imageVertical: 'images/trapeze_vert.jpg',
-        imageHorizontal: 'images/trapeze_horiz.jpg',
+        imageVertical: 'images/trapezoid_vert.jpg',
+        imageHorizontal: 'images/trapezoid_horiz.jpg',
         type: 'Фильм',
         seasons: 1,
         episodes: 1,
@@ -287,112 +287,12 @@ const rolesDatabase = [
     { titleId: 'dandadan', voiceId: 'nemo', character: 'Окарун', characterImage: 'images/okarun.jpg', episodes: '1-12', type: 'main' },
 ];
 
-// ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-
-function getVoiceById(id) {
-    return voicesDatabase.find(v => v.id === id) || null;
-}
-
-function getVoiceByName(name) {
-    return voicesDatabase.find(v => v.name === name || v.nameRu === name) || null;
-}
-
-function getRolesByVoiceId(voiceId) {
-    return rolesDatabase.filter(r => r.voiceId === voiceId);
-}
-
-function getTitlesByVoiceId(voiceId) {
-    const roles = getRolesByVoiceId(voiceId);
-    const titleIds = [...new Set(roles.map(r => r.titleId))];
-    
-    return titleIds.map(titleId => {
-        const title = titlesDatabase.find(t => t.id === titleId);
-        if (!title) return null;
-        const voiceRoles = roles.filter(r => r.titleId === titleId);
-        return {
-            ...title,
-            roles: voiceRoles
-        };
-    }).filter(t => t);
-}
-
-function getVoicesByTitleId(titleId) {
-    const roles = rolesDatabase.filter(r => r.titleId === titleId);
-    const voiceIds = [...new Set(roles.map(r => r.voiceId))];
-    
-    return voiceIds.map(voiceId => {
-        const voice = getVoiceById(voiceId);
-        if (!voice) return null;
-        const titleRoles = roles.filter(r => r.voiceId === voiceId);
-        return {
-            ...voice,
-            roles: titleRoles
-        };
-    }).filter(v => v);
-}
-
-function getTitleById(id) {
-    return titlesDatabase.find(t => t.id === id) || null;
-}
-
-function groupRolesByType(roles) {
-    return {
-        main: roles.filter(r => r.type === 'main'),
-        recurring: roles.filter(r => r.type === 'recurring'),
-        supporting: roles.filter(r => r.type === 'supporting'),
-        guest: roles.filter(r => r.type === 'guest')
-    };
-}
-
-function getVoiceStats(voiceId) {
-    const roles = getRolesByVoiceId(voiceId);
-    const titles = getTitlesByVoiceId(voiceId);
-    const grouped = groupRolesByType(roles);
-    
-    return {
-        totalTitles: titles.length,
-        totalRoles: roles.length,
-        mainRoles: grouped.main.length,
-        recurringRoles: grouped.recurring.length,
-        supportingRoles: grouped.supporting.length,
-        guestRoles: grouped.guest.length
-    };
-}
-
-function searchDatabase(query) {
-    if (!query || query.trim() === '') return { titles: [], voices: [] };
-    
-    const lowerQuery = query.toLowerCase().trim();
-    
-    const titles = titlesDatabase.filter(title => 
-        title.name.toLowerCase().includes(lowerQuery) || 
-        (title.nameEn && title.nameEn.toLowerCase().includes(lowerQuery))
-    );
-    
-    const voices = voicesDatabase.filter(voice => 
-        voice.name.toLowerCase().includes(lowerQuery) ||
-        (voice.nameRu && voice.nameRu.toLowerCase().includes(lowerQuery)) ||
-        (voice.nameEn && voice.nameEn.toLowerCase().includes(lowerQuery))
-    );
-    
-    return { titles, voices };
-}
-
-// ЭКСПОРТ В ГЛОБАЛЬНУЮ ОБЛАСТЬ
+// ЭКСПОРТ В ГЛОБАЛЬНУЮ ОБЛАСТЬ (для инициализации)
 window.titlesDatabase = titlesDatabase;
 window.voicesDatabase = voicesDatabase;
 window.rolesDatabase = rolesDatabase;
-window.getVoiceById = getVoiceById;
-window.getVoiceByName = getVoiceByName;
-window.getTitleById = getTitleById;
-window.getRolesByVoiceId = getRolesByVoiceId;
-window.getTitlesByVoiceId = getTitlesByVoiceId;
-window.getVoicesByTitleId = getVoicesByTitleId;
-window.groupRolesByType = groupRolesByType;
-window.getVoiceStats = getVoiceStats;
-window.searchDatabase = searchDatabase;
 
-console.log('✅ data.js загружен | foxline Studio');
+console.log('✅ data.js загружен');
 console.log(`📊 Тайтлов: ${titlesDatabase.length}`);
 console.log(`🎭 Дабберов: ${voicesDatabase.length}`);
 console.log(`🔗 Ролей: ${rolesDatabase.length}`);

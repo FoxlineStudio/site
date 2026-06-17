@@ -31,6 +31,15 @@
         .featured-image:hover {
             transform: scale(1.05);
         }
+        .admin-badge {
+            display: inline-block;
+            background: #d000ff;
+            color: #fff;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +52,7 @@
         <a href="index.html" class="nav-icon-btn">🏠Главная</a>
         <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
         <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="dub-in.html" class="nav-icon-btn">🎙️DUB-in</a>
         <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
         <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
     </div>
@@ -75,7 +85,7 @@
             <p><strong>15.06.2026</strong> - Запущен новый сайт Foxline Studio!</p>
         </div>
         <div class="news-item" style="background:#210020; padding:10px; border-radius:8px;">
-            <p><strong>10.06.2026</strong> - Вышла 12 серия "ДанДаДан"</p>
+            <p><strong>10.06.2026</strong> - Вышла 7 серия "Молчаливой ведьмы"</p>
         </div>
     </div>
 </div>
@@ -86,13 +96,25 @@
         <a href="index.html" style="color: #6d076d;">Главная</a>
         <a href="titles.html" style="color: #6d076d;">Тайтлы</a>
         <a href="sostav.html" style="color: #6d076d;">Состав</a>
+        <a href="dub-in.html" style="color: #6d076d;">DUB-in</a>
         <a href="privacy.html" style="color: #6d076d;">Политика</a>
     </div>
     <p>© 2026 Foxline Studio. Все права защищены.</p>
 </div>
 
 <script type="module">
-    import { getCurrentUser, onAuthStateChangedListener } from './firebase-config.js';
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener,
+        getTitles,
+        isAdmin,
+        initializeData
+    } from './firebase-config.js';
+
+    // Инициализируем данные при первом запуске
+    setTimeout(async () => {
+        await initializeData();
+    }, 1000);
 
     function updateAuthButton(user) {
         const btn = document.getElementById('authBtn');
@@ -105,12 +127,13 @@
         }
     }
 
-    function loadFeaturedTitles() {
+    async function loadFeaturedTitles() {
         const container = document.getElementById('featured-titles');
-        if (window.titlesDatabase && window.titlesDatabase.length > 0) {
-            const titles = window.titlesDatabase.slice(0, 3);
+        const result = await getTitles();
+        
+        if (result.success && result.titles.length > 0) {
+            const titles = result.titles.slice(0, 3);
             container.innerHTML = titles.map(title => {
-                // Используем ВЕРТИКАЛЬНУЮ обложку для карточек
                 const image = title.imageHorizontal || title.image;
                 return `
                     <div class='content-box2'>

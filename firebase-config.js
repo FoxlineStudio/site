@@ -12,114 +12,92 @@ import {
 import {
     getFirestore,
     collection,
-    addDoc,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    deleteDoc,
     doc,
     setDoc,
     getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    addDoc,
+    query,
+    where,
+    orderBy,
     serverTimestamp,
-    updateDoc
+    writeBatch,
+    arrayUnion,
+    arrayRemove
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ============================================================
-// 🔥 ВСТАВЬТЕ СВОИ ДАННЫЕ ИЗ FIREBASE CONSOLE
+// 🔥 КОНФИГУРАЦИЯ FIREBASE
 // ============================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
-  authDomain: "foxline-site.firebaseapp.com",
-  projectId: "foxline-site",
-  storageBucket: "foxline-site.firebasestorage.app",
-  messagingSenderId: "233149428799",
-  appId: "1:233149428799:web:1712345a9fb0da0669348a",
-  measurementId: "G-YTC21D3KMN"
+    apiKey: "AIzaSyCjMRzg8fNqfIT0ua2X_urqTePm7MYbQn8",
+    authDomain: "foxline-site.firebaseapp.com",
+    projectId: "foxline-site",
+    storageBucket: "foxline-site.firebasestorage.app",
+    messagingSenderId: "91239326767",
+    appId: "1:91239326767:web:7488b92e5cf0a3d188fa82"
 };
 
-// Инициализация
+// ИНИЦИАЛИЗАЦИЯ
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-console.log('🔥 Firebase инициализирован');
+console.log('✅ Firebase подключён');
 
 // ============================================================
 // ========== АВТОРИЗАЦИЯ ==========
 // ============================================================
 
-// Регистрация
 async function registerUser(email, password, displayName) {
     try {
-        console.log('📝 Начинаем регистрацию:', email);
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        console.log('✅ Пользователь создан в Auth:', user.uid);
-        
-        // Обновляем профиль с именем
         await updateProfile(user, { displayName: displayName });
-        console.log('✅ Имя обновлено в Auth');
         
-        // Сохраняем данные пользователя в Firestore
-        const userData = {
+        // Создаём пользователя в Firestore с ролью 'user'
+        await setDoc(doc(db, "users", user.uid), {
             displayName: displayName,
             email: email,
             photoURL: '',
+            role: 'user', // user, dubber, admin
             createdAt: serverTimestamp()
-        };
-        
-        await setDoc(doc(db, "users", user.uid), userData);
-        console.log('✅ Данные сохранены в Firestore:', userData);
+        });
         
         return { success: true, user: user };
     } catch (error) {
-        console.error('❌ Ошибка регистрации:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Вход
 async function loginUser(email, password) {
     try {
-        console.log('🔑 Вход:', email);
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        console.log('✅ Вход выполнен:', userCredential.user.uid);
         return { success: true, user: userCredential.user };
     } catch (error) {
-        console.error('❌ Ошибка входа:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Выход
 async function logoutUser() {
     try {
         await signOut(auth);
-        console.log('✅ Выход выполнен');
         return { success: true };
     } catch (error) {
-        console.error('❌ Ошибка выхода:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Получить текущего пользователя
 function getCurrentUser() {
-    const user = auth.currentUser;
-    console.log('👤 Текущий пользователь:', user ? user.uid : 'не авторизован');
-    return user;
+    return auth.currentUser;
 }
 
-// Следить за состоянием авторизации
 function onAuthStateChangedListener(callback) {
-    return onAuthStateChanged(auth, (user) => {
-        console.log('🔄 Состояние авторизации изменилось:', user ? user.uid : 'не авторизован');
-        callback(user);
-    });
+    return onAuthStateChanged(auth, callback);
 }
 
-// Восстановление пароля
 async function resetPassword(email) {
     try {
         await sendPasswordResetEmail(auth, email);
@@ -130,89 +108,360 @@ async function resetPassword(email) {
 }
 
 // ============================================================
-// ========== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ (FIRESTORE) ==========
+// ========== ПОЛЬЗОВАТЕЛИ (РОЛИ) ==========
 // ============================================================
 
-// Получить данные пользователя из Firestore
 async function getUserData(uid) {
     try {
-        console.log('📖 Загрузка данных пользователя:', uid);
         const docRef = doc(db, "users", uid);
         const docSnap = await getDoc(docRef);
-        
         if (docSnap.exists()) {
-            console.log('✅ Данные найдены:', docSnap.data());
             return { success: true, data: docSnap.data() };
         } else {
-            console.log('⚠️ Документ не найден, создаём новый');
-            // Если документа нет, создаём с базовыми данными
+            // Создаём пользователя с ролью по умолчанию
             const user = getCurrentUser();
             if (user) {
                 const newData = {
                     displayName: user.displayName || user.email || 'Пользователь',
                     email: user.email,
                     photoURL: user.photoURL || '',
+                    role: 'user',
                     createdAt: serverTimestamp()
                 };
                 await setDoc(docRef, newData);
-                console.log('✅ Создан новый документ:', newData);
                 return { success: true, data: newData };
             }
             return { success: false, error: "Данные не найдены" };
         }
     } catch (error) {
-        console.error('❌ Ошибка загрузки данных:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Обновить профиль пользователя
 async function updateUserProfile(uid, data) {
     try {
-        console.log('✏️ Обновление профиля:', uid, data);
         const docRef = doc(db, "users", uid);
         await updateDoc(docRef, {
             ...data,
             updatedAt: serverTimestamp()
         });
-        console.log('✅ Профиль обновлён в Firestore');
-        
-        // Также обновляем displayName в Auth
         const user = getCurrentUser();
         if (user) {
-            if (data.displayName) {
-                await updateProfile(user, { displayName: data.displayName });
-                console.log('✅ Имя обновлено в Auth');
-            }
-            if (data.photoURL !== undefined) {
-                await updateProfile(user, { photoURL: data.photoURL });
-                console.log('✅ Аватарка обновлена в Auth');
-            }
+            if (data.displayName) await updateProfile(user, { displayName: data.displayName });
+            if (data.photoURL !== undefined) await updateProfile(user, { photoURL: data.photoURL });
         }
         return { success: true };
     } catch (error) {
-        console.error('❌ Ошибка обновления профиля:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateUserRole(uid, newRole) {
+    try {
+        const docRef = doc(db, "users", uid);
+        await updateDoc(docRef, { role: newRole });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getAllUsers() {
+    try {
+        const snapshot = await getDocs(collection(db, "users"));
+        const users = [];
+        snapshot.forEach(doc => {
+            users.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, users: users };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function isAdmin(uid) {
+    const result = await getUserData(uid);
+    if (result.success) {
+        return result.data.role === 'admin';
+    }
+    return false;
+}
+
+async function isDubber(uid) {
+    const result = await getUserData(uid);
+    if (result.success) {
+        return result.data.role === 'dubber' || result.data.role === 'admin';
+    }
+    return false;
+}
+
+// ============================================================
+// ========== ДАННЫЕ (ТАЙТЛЫ, ДАББЕРЫ, РОЛИ) ==========
+// ============================================================
+
+// ---- ТАЙТЛЫ ----
+
+async function getTitles() {
+    try {
+        const snapshot = await getDocs(collection(db, "titles"));
+        const titles = [];
+        snapshot.forEach(doc => {
+            titles.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, titles: titles };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getTitleById(titleId) {
+    try {
+        const docRef = doc(db, "titles", titleId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
+        }
+        return { success: false, error: "Тайтл не найден" };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function addTitle(titleData) {
+    try {
+        const docRef = await addDoc(collection(db, "titles"), {
+            ...titleData,
+            createdAt: serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateTitle(titleId, data) {
+    try {
+        const docRef = doc(db, "titles", titleId);
+        await updateDoc(docRef, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteTitle(titleId) {
+    try {
+        await deleteDoc(doc(db, "titles", titleId));
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ---- ДАББЕРЫ ----
+
+async function getVoices() {
+    try {
+        const snapshot = await getDocs(collection(db, "voices"));
+        const voices = [];
+        snapshot.forEach(doc => {
+            voices.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, voices: voices };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getVoiceById(voiceId) {
+    try {
+        const docRef = doc(db, "voices", voiceId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { success: true, data: { id: docSnap.id, ...docSnap.data() } };
+        }
+        return { success: false, error: "Даббер не найден" };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function addVoice(voiceData) {
+    try {
+        const docRef = await addDoc(collection(db, "voices"), {
+            ...voiceData,
+            createdAt: serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateVoice(voiceId, data) {
+    try {
+        const docRef = doc(db, "voices", voiceId);
+        await updateDoc(docRef, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteVoice(voiceId) {
+    try {
+        await deleteDoc(doc(db, "voices", voiceId));
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ---- РОЛИ ----
+
+async function getRoles() {
+    try {
+        const snapshot = await getDocs(collection(db, "roles"));
+        const roles = [];
+        snapshot.forEach(doc => {
+            roles.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, roles: roles };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function getRolesByTitleId(titleId) {
+    try {
+        const q = query(collection(db, "roles"), where("titleId", "==", titleId));
+        const snapshot = await getDocs(q);
+        const roles = [];
+        snapshot.forEach(doc => {
+            roles.push({ id: doc.id, ...doc.data() });
+        });
+        return { success: true, roles: roles };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function addRole(roleData) {
+    try {
+        const docRef = await addDoc(collection(db, "roles"), {
+            ...roleData,
+            createdAt: serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateRole(roleId, data) {
+    try {
+        const docRef = doc(db, "roles", roleId);
+        await updateDoc(docRef, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function deleteRole(roleId) {
+    try {
+        await deleteDoc(doc(db, "roles", roleId));
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+// ---- МАТЕРИАЛЫ ДЛЯ ОЗВУЧКИ (dub-in) ----
+
+async function getDubMaterials(titleId) {
+    try {
+        const docRef = doc(db, "dubMaterials", titleId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return { success: true, data: docSnap.data() };
+        }
+        return { success: true, data: { raw: [], softsubs: [], hardsubs: [] } };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function updateDubMaterials(titleId, materialType, items) {
+    try {
+        const docRef = doc(db, "dubMaterials", titleId);
+        await setDoc(docRef, {
+            [materialType]: items,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function addDubMaterial(titleId, materialType, item) {
+    try {
+        const docRef = doc(db, "dubMaterials", titleId);
+        const docSnap = await getDoc(docRef);
+        let existing = { raw: [], softsubs: [], hardsubs: [] };
+        if (docSnap.exists()) {
+            existing = docSnap.data();
+        }
+        existing[materialType].push(item);
+        await setDoc(docRef, existing, { merge: true });
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+async function removeDubMaterial(titleId, materialType, index) {
+    try {
+        const docRef = doc(db, "dubMaterials", titleId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            return { success: false, error: "Материалы не найдены" };
+        }
+        const data = docSnap.data();
+        if (data[materialType] && data[materialType].length > index) {
+            data[materialType].splice(index, 1);
+            await setDoc(docRef, data);
+            return { success: true };
+        }
+        return { success: false, error: "Элемент не найден" };
+    } catch (error) {
         return { success: false, error: error.message };
     }
 }
 
 // ============================================================
-// ========== КОММЕНТАРИИ (FIRESTORE) ==========
+// ========== КОММЕНТАРИИ ==========
 // ============================================================
 
-// Добавить комментарий
 async function addComment(titleId, text, rating) {
     const user = getCurrentUser();
     if (!user) {
         return { success: false, error: "Необходимо авторизоваться" };
     }
-    
     try {
-        // Получаем данные пользователя
         const userData = await getUserData(user.uid);
         const displayName = userData.success ? userData.data.displayName : (user.displayName || "Аноним");
-        const photoURL = userData.success ? userData.data.photoURL : (user.photoURL || '');
-        
+        const photoURL = userData.success ? userData.data.photoURL : '';
         const docRef = await addDoc(collection(db, "comments"), {
             titleId: titleId,
             uid: user.uid,
@@ -222,19 +471,14 @@ async function addComment(titleId, text, rating) {
             rating: rating || 5,
             time: serverTimestamp()
         });
-        
-        console.log('✅ Комментарий добавлен, ID:', docRef.id);
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('❌ Ошибка добавления комментария:', error);
         return { success: false, error: error.message };
     }
 }
 
-// Получить комментарии для тайтла
 async function getComments(titleId) {
     try {
-        console.log('📖 Загрузка комментариев для:', titleId);
         const q = query(
             collection(db, "comments"),
             where("titleId", "==", titleId),
@@ -245,26 +489,77 @@ async function getComments(titleId) {
         querySnapshot.forEach((doc) => {
             comments.push({ id: doc.id, ...doc.data() });
         });
-        console.log(`✅ Загружено ${comments.length} комментариев`);
         return comments;
     } catch (error) {
-        console.error('❌ Ошибка загрузки комментариев:', error);
+        console.error('Ошибка загрузки комментариев:', error);
         return [];
     }
 }
 
-// Удалить комментарий
 async function deleteComment(commentId) {
     const user = getCurrentUser();
     if (!user) return { success: false, error: "Не авторизован" };
-    
     try {
         await deleteDoc(doc(db, "comments", commentId));
-        console.log('✅ Комментарий удалён:', commentId);
         return { success: true };
     } catch (error) {
-        console.error('❌ Ошибка удаления комментария:', error);
         return { success: false, error: error.message };
+    }
+}
+
+// ============================================================
+// ========== ИНИЦИАЛИЗАЦИЯ ДАННЫХ (ПЕРВЫЙ ЗАПУСК) ==========
+// ============================================================
+
+async function initializeData() {
+    try {
+        // Проверяем, есть ли уже тайтлы
+        const titlesResult = await getTitles();
+        if (titlesResult.success && titlesResult.titles.length > 0) {
+            console.log('📊 Данные уже существуют в Firestore');
+            return;
+        }
+
+        console.log('📝 Загрузка начальных данных в Firestore...');
+        const batch = writeBatch(db);
+
+        // Загружаем тайтлы из window.titlesDatabase
+        if (window.titlesDatabase && window.titlesDatabase.length > 0) {
+            for (const title of window.titlesDatabase) {
+                const docRef = doc(db, "titles", title.id || title.name);
+                batch.set(docRef, {
+                    ...title,
+                    createdAt: serverTimestamp()
+                });
+            }
+        }
+
+        // Загружаем дабберов
+        if (window.voicesDatabase && window.voicesDatabase.length > 0) {
+            for (const voice of window.voicesDatabase) {
+                const docRef = doc(db, "voices", voice.id || voice.name);
+                batch.set(docRef, {
+                    ...voice,
+                    createdAt: serverTimestamp()
+                });
+            }
+        }
+
+        // Загружаем роли
+        if (window.rolesDatabase && window.rolesDatabase.length > 0) {
+            for (const role of window.rolesDatabase) {
+                const docRef = doc(db, "roles", role.id || `${role.titleId}_${role.voiceId}`);
+                batch.set(docRef, {
+                    ...role,
+                    createdAt: serverTimestamp()
+                });
+            }
+        }
+
+        await batch.commit();
+        console.log('✅ Начальные данные загружены в Firestore!');
+    } catch (error) {
+        console.error('❌ Ошибка загрузки начальных данных:', error);
     }
 }
 
@@ -275,17 +570,49 @@ async function deleteComment(commentId) {
 export {
     auth,
     db,
+    // Авторизация
     registerUser,
     loginUser,
     logoutUser,
     getCurrentUser,
     onAuthStateChangedListener,
+    resetPassword,
+    // Пользователи
     getUserData,
     updateUserProfile,
+    updateUserRole,
+    getAllUsers,
+    isAdmin,
+    isDubber,
+    // Тайтлы
+    getTitles,
+    getTitleById,
+    addTitle,
+    updateTitle,
+    deleteTitle,
+    // Дабберы
+    getVoices,
+    getVoiceById,
+    addVoice,
+    updateVoice,
+    deleteVoice,
+    // Роли
+    getRoles,
+    getRolesByTitleId,
+    addRole,
+    updateRole,
+    deleteRole,
+    // Материалы
+    getDubMaterials,
+    updateDubMaterials,
+    addDubMaterial,
+    removeDubMaterial,
+    // Комментарии
     addComment,
     getComments,
     deleteComment,
-    resetPassword
+    // Инициализация
+    initializeData
 };
 
-console.log('✅ Firebase подключён');
+console.log('🔥 Модуль firebase-config.js загружен');

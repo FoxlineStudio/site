@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUB-in - foxline Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="firebase-config.js"></script>
+    <style>
+        .dub-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .dub-card {
+            width: 210px;
+            background: rgb(19, 0, 20);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid #3a0035;
+            text-decoration: none;
+            color: inherit;
+        }
+        .dub-card:hover {
+            transform: translateY(-8px);
+            border-color: #6d076d;
+            box-shadow: 0 15px 35px rgba(208, 0, 255, 0.2);
+        }
+        .dub-card-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+        .dub-card-info {
+            padding: 12px;
+            text-align: center;
+        }
+        .dub-card-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d000ff;
+            margin-bottom: 5px;
+        }
+        .dub-card-meta {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-content {
+            background: #1a001a;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid #6d076d;
+            position: relative;
+        }
+        .modal-content h2 {
+            color: #d000ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #fff;
+        }
+        .material-section {
+            margin: 20px 0;
+        }
+        .material-section h3 {
+            color: #d000ff;
+            font-size: 18px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #3a0035;
+            padding-bottom: 8px;
+        }
+        .material-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(58, 0, 53, 0.2);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.3s;
+        }
+        .material-item:hover {
+            background: rgba(58, 0, 53, 0.4);
+        }
+        .material-item a {
+            color: #88ccff;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .material-item a:hover {
+            text-decoration: underline;
+        }
+        .material-item .delete-btn {
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .material-item .delete-btn:hover {
+            background: #8a0a8a;
+        }
+        .add-material-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .add-material-form input {
+            flex: 1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.2);
+            color: #fff;
+            font-size: 14px;
+            min-width: 150px;
+        }
+        .add-material-form input:focus {
+            border-color: #d000ff;
+            outline: none;
+        }
+        .add-material-form select {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid #3a0035;
+            background: #1a001a;
+            color: #fff;
+            font-size: 14px;
+        }
+        .add-material-form button {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #6d076d, #3a0035);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .add-material-form button:hover {
+            background: linear-gradient(135deg, #8a0a8a, #4a0045);
+            transform: translateY(-2px);
+        }
+        .no-materials {
+            color: #666;
+            text-align: center;
+            padding: 10px;
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .admin-only {
+            color: #d000ff;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .auth-prompt {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        .auth-prompt a {
+            color: #d000ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header class="fixed-header">
+    <div class="nav-buttons">
+        <a href="index.html">
+            <img src="logo1.jpg" alt="foxline Studio" class="header-logo">
+        </a>
+        <a href="index.html" class="nav-icon-btn">🏠Главная</a>
+        <a href="titles.html" class="nav-icon-btn">🎦Тайтлы</a>
+        <a href="sostav.html" class="nav-icon-btn">🎭Состав</a>
+        <a href="dub-in.html" class="nav-icon-btn">🎙️DUB-in</a>
+        <a href="search.html" class="nav-icon-btn">🔍Поиск</a>
+        <a href="login.html" class="nav-icon-btn" id="authBtn">🔑 Вход</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="header">
+        <img src="logo2.jpg" alt="foxline Studio" class="avatar">
+        <h1 class="title">🎙️ DUB-in</h1>
+        <p style="color:#aaa; text-align:center;">Материалы для озвучки</p>
+        <hr>
+    </div>
+    
+    <div class="content-box">
+        <div id="dubContent">
+            <div class="loading-spinner">⏳ Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content" id="modalContent">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <div id="modalBody">
+            <div class="loading-spinner">⏳ Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { 
+        getCurrentUser, 
+        onAuthStateChangedListener,
+        getTitles,
+        getDubMaterials,
+        addDubMaterial,
+        removeDubMaterial,
+        isAdmin,
+        isDubber,
+        getUserData
+    } from './firebase-config.js';
+
+    let currentUser = null;
+    let currentUserRole = 'user';
+    let currentTitleId = null;
+
+    function updateAuthButton(user) {
+        const btn = document.getElementById('authBtn');
+        if (user) {
+            btn.textContent = `👤 ${user.displayName || user.email || 'Профиль'}`;
+            btn.href = 'profile.html';
+        } else {
+            btn.textContent = '🔑 Вход';
+            btn.href = 'login.html';
+        }
+    }
+
+    // Открыть модальное окно с материалами
+    window.openModal = function(titleId, titleName) {
+        currentTitleId = titleId;
+        const overlay = document.getElementById('modalOverlay');
+        const body = document.getElementById('modalBody');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        body.innerHTML = '<div class="loading-spinner">⏳ Загрузка материалов...</div>';
+        
+        loadMaterials(titleId, titleName);
+    };
+
+    window.closeModal = function() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+        currentTitleId = null;
+    };
+
+    // Закрытие по клику на оверлей
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Загрузка материалов
+    async function loadMaterials(titleId, titleName) {
+        const body = document.getElementById('modalBody');
+        const isAdminUser = currentUserRole === 'admin';
+        const isDubberUser = currentUserRole === 'dubber' || currentUserRole === 'admin';
+        
+        const result = await getDubMaterials(titleId);
+        if (!result.success) {
+            body.innerHTML = `<p style="color:#ff6b6b;">❌ Ошибка загрузки: ${result.error}</p>`;
+            return;
+        }
+        
+        const data = result.data;
+        const raw = data.raw || [];
+        const softsubs = data.softsubs || [];
+        const hardsubs = data.hardsubs || [];
+
+        let html = `
+            <h2>${titleName}</h2>
+            <p style="color:#666; margin-bottom:20px;">Материалы для озвучки</p>
+            
+            ${!isDubberUser ? `
+                <div style="background:#2a002a; padding:15px; border-radius:10px; text-align:center; color:#aaa; margin-bottom:20px;">
+                    🔒 Для доступа к материалам нужна роль <strong style="color:#d000ff;">Даббер</strong> или <strong style="color:#d000ff;">Админ</strong>
+                </div>
+            ` : ''}
+        `;
+
+        // RAW
+        html += `<div class="material-section">
+            <h3>🎬 RAW (оригинал)</h3>`;
+        if (raw.length === 0) {
+            html += `<div class="no-materials">Нет материалов</div>`;
+        } else {
+            raw.forEach((item, index) => {
+                html += `
+                    <div class="material-item">
+                        <a href="${item}" target="_blank">${item}</a>
+                        ${isAdminUser ? `<button class="delete-btn" onclick="deleteMaterial('${titleId}','raw',${index})">🗑️</button>` : ''}
+                    </div>
+                `;
+            });
+        }
+        if (isAdminUser) {
+            html += `
+                <div class="add-material-form">
+                    <input type="text" id="rawInput" placeholder="Ссылка на Google Drive">
+                    <button onclick="addMaterial('${titleId}','raw')">➕ Добавить</button>
+                </div>
+            `;
+        }
+        html += `</div>`;
+
+        // Софтсабы
+        html += `<div class="material-section">
+            <h3>📝 Софтсабы (.ass)</h3>`;
+        if (softsubs.length === 0) {
+            html += `<div class="no-materials">Нет материалов</div>`;
+        } else {
+            softsubs.forEach((item, index) => {
+                html += `
+                    <div class="material-item">
+                        <a href="${item}" target="_blank">${item}</a>
+                        ${isAdminUser ? `<button class="delete-btn" onclick="deleteMaterial('${titleId}','softsubs',${index})">🗑️</button>` : ''}
+                    </div>
+                `;
+            });
+        }
+        if (isAdminUser) {
+            html += `
+                <div class="add-material-form">
+                    <input type="text" id="softsubsInput" placeholder="Ссылка на Google Drive">
+                    <button onclick="addMaterial('${titleId}','softsubs')">➕ Добавить</button>
+                </div>
+            `;
+        }
+        html += `</div>`;
+
+        // Хардсабы
+        html += `<div class="material-section">
+            <h3>🎥 Хардсабы (со встроенными субтитрами)</h3>`;
+        if (hardsubs.length === 0) {
+            html += `<div class="no-materials">Нет материалов</div>`;
+        } else {
+            hardsubs.forEach((item, index) => {
+                html += `
+                    <div class="material-item">
+                        <a href="${item}" target="_blank">${item}</a>
+                        ${isAdminUser ? `<button class="delete-btn" onclick="deleteMaterial('${titleId}','hardsubs',${index})">🗑️</button>` : ''}
+                    </div>
+                `;
+            });
+        }
+        if (isAdminUser) {
+            html += `
+                <div class="add-material-form">
+                    <input type="text" id="hardsubsInput" placeholder="Ссылка на Google Drive">
+                    <button onclick="addMaterial('${titleId}','hardsubs')">➕ Добавить</button>
+                </div>
+            `;
+        }
+        html += `</div>`;
+
+        if (!isDubberUser) {
+            html += `
+                <div style="text-align:center; margin-top:20px; padding:15px; background:#2a002a; border-radius:10px;">
+                    <a href="login.html" style="color:#d000ff;">Войдите</a> или запросите роль у администратора
+                </div>
+            `;
+        }
+
+        body.innerHTML = html;
+    }
+
+    // Добавление материала
+    window.addMaterial = async function(titleId, type) {
+        const inputId = type + 'Input';
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const url = input.value.trim();
+        if (!url) {
+            alert('Введите ссылку на Google Drive');
+            return;
+        }
+        
+        const result = await addDubMaterial(titleId, type, url);
+        if (result.success) {
+            input.value = '';
+            const titleName = document.querySelector('.modal-content h2')?.textContent || '';
+            await loadMaterials(titleId, titleName);
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
+    // Удаление материала
+    window.deleteMaterial = async function(titleId, type, index) {
+        if (!confirm('Удалить этот материал?')) return;
+        const result = await removeDubMaterial(titleId, type, index);
+        if (result.success) {
+            const titleName = document.querySelector('.modal-content h2')?.textContent || '';
+            await loadMaterials(titleId, titleName);
+        } else {
+            alert('❌ Ошибка: ' + result.error);
+        }
+    };
+
+    // Загрузка списка тайтлов
+    async function loadTitles() {
+        const container = document.getElementById('dubContent');
+        
+        const titlesResult = await getTitles();
+        if (!titlesResult.success) {
+            container.innerHTML = `<p style="color:#ff6b6b;">❌ Ошибка загрузки: ${titlesResult.error}</p>`;
+            return;
+        }
+        
+        if (titlesResult.titles.length === 0) {
+            container.innerHTML = '<p style="color:#666; text-align:center; padding:40px;">Пока нет тайтлов</p>';
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="dub-grid">
+                ${titlesResult.titles.map(title => {
+                    const image = title.imageVertical || title.imageHorizontal || title.image;
+                    return `
+                        <div class="dub-card" onclick="openModal('${title.id}','${title.name}')">
+                            <img src="${image}" alt="${title.name}" class="dub-card-image" onerror="this.src='https://via.placeholder.com/210x280/6d076d/fff?text=${encodeURIComponent(title.name)}'">
+                            <div class="dub-card-info">
+                                <div class="dub-card-name">${title.name}</div>
+                                <div class="dub-card-meta">${title.type} • ${title.episodes} серий</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    // Загрузка роли пользователя
+    async function loadUserRole() {
+        const user = getCurrentUser();
+        if (user) {
+            const result = await getUserData(user.uid);
+            if (result.success) {
+                currentUserRole = result.data.role || 'user';
+            }
+        }
+    }
+
+    onAuthStateChangedListener(async (user) => {
+        currentUser = user;
+        updateAuthButton(user);
+        if (user) {
+            await loadUserRole();
+        } else {
+            currentUserRole = 'user';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadUserRole();
+        await loadTitles();
+        updateAuthButton(getCurrentUser());
+    });
+</script>
+
+</body>
+</html>
