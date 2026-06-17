@@ -269,7 +269,7 @@
             color: #fff;
         }
 
-        /* ===== НОВЫЙ СТИЛЬ ДЛЯ СПИСКА СЕРИЙ ===== */
+        /* ===== СПИСОК СЕРИЙ ===== */
         .episodes-editor {
             margin-top: 10px;
         }
@@ -379,6 +379,69 @@
             color: #ffaa00;
         }
 
+        /* ===== ПОЛНОЭКРАННЫЙ ПЛЕЕР ===== */
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            aspect-ratio: 16/9;
+        }
+        .player-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .player-wrapper .fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+            user-select: none;
+        }
+        .player-wrapper .fullscreen-btn:hover {
+            background: rgba(208, 0, 255, 0.6);
+            border-color: #d000ff;
+            transform: scale(1.1);
+        }
+        .player-wrapper .fullscreen-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Полноэкранный режим для плеера */
+        .player-wrapper.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            border-radius: 0;
+            margin: 0;
+            aspect-ratio: auto;
+            background: #000;
+        }
+        .player-wrapper.fullscreen .fullscreen-btn {
+            bottom: 30px;
+            right: 30px;
+        }
+
         @media (max-width: 768px) {
             .comment-header {
                 flex-direction: column;
@@ -398,6 +461,22 @@
             .episode-edit-item .ep-url,
             .episode-edit-item .ep-status {
                 width: 100%;
+            }
+            .player-wrapper .fullscreen-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+                bottom: 12px;
+                right: 12px;
+            }
+        }
+        @media (max-width: 480px) {
+            .player-wrapper .fullscreen-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+                bottom: 10px;
+                right: 10px;
             }
         }
     </style>
@@ -478,7 +557,40 @@
         }
     }
 
-    // ===== КОММЕНТАРИИ (без изменений) =====
+    // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
+
+    window.toggleFullscreen = function() {
+        const wrapper = document.getElementById('playerWrapper');
+        if (!wrapper) return;
+        
+        if (!document.fullscreenElement && !wrapper.classList.contains('fullscreen')) {
+            // Пытаемся использовать Fullscreen API
+            if (wrapper.requestFullscreen) {
+                wrapper.requestFullscreen().catch(() => {
+                    // Если не поддерживается, используем CSS
+                    wrapper.classList.toggle('fullscreen');
+                });
+            } else {
+                wrapper.classList.toggle('fullscreen');
+            }
+        } else {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                wrapper.classList.remove('fullscreen');
+            }
+        }
+    };
+
+    // Следим за выходом из полноэкранного режима
+    document.addEventListener('fullscreenchange', () => {
+        const wrapper = document.getElementById('playerWrapper');
+        if (wrapper && !document.fullscreenElement) {
+            wrapper.classList.remove('fullscreen');
+        }
+    });
+
+    // ===== КОММЕНТАРИИ =====
 
     function renderComments(comments) {
         const container = document.getElementById('comments-list');
@@ -646,7 +758,7 @@
         }
     }
 
-    // ===== АДМИН-ФУНКЦИИ (ОБНОВЛЕННЫЕ) =====
+    // ===== АДМИН-ФУНКЦИИ =====
 
     window.toggleAdminEdit = function() {
         const panel = document.getElementById('adminEditPanel');
@@ -671,8 +783,6 @@
         document.getElementById('editDescription').value = t.description || '';
         renderEpisodeEditor(t.episodesList || []);
     }
-
-    // ===== НОВАЯ ФУНКЦИЯ РЕНДЕРИНГА СЕРИЙ =====
 
     function renderEpisodeEditor(episodes) {
         const container = document.getElementById('episodesEditor');
@@ -699,15 +809,12 @@
         `).join('');
     }
 
-    // ===== ФУНКЦИИ УПРАВЛЕНИЯ СЕРИЯМИ =====
-
     window.removeEpisode = function(index) {
         const episodes = getEpisodesFromEditor();
         if (episodes.length <= 1) {
             if (!confirm('Удалить последнюю серию?')) return;
         }
         episodes.splice(index, 1);
-        // Перенумеровываем
         episodes.forEach((ep, i) => ep.number = i + 1);
         renderEpisodeEditor(episodes);
     };
@@ -721,7 +828,6 @@
             status: 'Скоро' 
         });
         renderEpisodeEditor(episodes);
-        // Скроллим к новой серии
         const container = document.getElementById('episodesEditor');
         const lastItem = container.lastElementChild;
         if (lastItem) {
@@ -745,30 +851,17 @@
         return episodes;
     }
 
-    // Обновляем данные с серий в реальном времени при изменении полей
     function setupEpisodesAutoSave() {
         const container = document.getElementById('episodesEditor');
         if (!container) return;
         
-        // Используем делегирование событий для всех полей
-        container.addEventListener('input', function(e) {
-            const target = e.target;
-            if (target.closest('.episode-edit-item')) {
-                // Просто обновляем скрытые данные, не перерендеривая
-                // Это позволяет сохранять состояние при редактировании
-            }
-        });
-        
-        // При потере фокуса обновляем нумерацию
         container.addEventListener('change', function(e) {
             const target = e.target;
             if (target.classList.contains('ep-number')) {
-                // Обновляем все номера последовательно
                 const items = container.querySelectorAll('.episode-edit-item');
                 items.forEach((el, index) => {
                     const numInput = el.querySelector('[data-field="number"]');
                     if (numInput) {
-                        // Если поле пустое или 0, ставим index+1
                         const val = parseInt(numInput.value);
                         if (!val || val < 1) {
                             numInput.value = index + 1;
@@ -779,8 +872,6 @@
         });
     }
 
-    // ===== СОХРАНЕНИЕ =====
-
     window.saveAdminEdit = async function() {
         const saveBtn = document.getElementById('saveEditBtn');
         saveBtn.disabled = true;
@@ -788,8 +879,6 @@
         
         const episodes = getEpisodesFromEditor();
         
-        // Проверяем, что все серии имеют номер
-        let hasError = false;
         episodes.forEach((ep, i) => {
             if (!ep.number || ep.number < 1) {
                 ep.number = i + 1;
@@ -810,7 +899,6 @@
             episodesList: episodes
         };
         
-        // Обновляем количество серий, если оно не совпадает
         if (data.episodes !== episodes.length) {
             data.episodes = episodes.length;
         }
@@ -828,20 +916,25 @@
         saveBtn.textContent = '💾 Сохранить изменения';
     };
 
-    // ===== ПЛЕЕР =====
+    // ===== ПЛЕЕР С ПОЛНОЭКРАННЫМ РЕЖИМОМ =====
 
     window.playEpisode = function(url, episodeNumber) {
         const container = document.getElementById('playerContainer');
         if (!url) {
             container.innerHTML = `
-                <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
-                    <p>Серия ещё не доступна</p>
+                <div class="player-wrapper" id="playerWrapper">
+                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
+                        <p>Серия ещё не доступна</p>
+                    </div>
                 </div>
             `;
             return;
         }
         container.innerHTML = `
-            <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
+            <div class="player-wrapper" id="playerWrapper">
+                <iframe id="playerFrame" width="100%" height="100%" src="${url}" frameborder="0" allowfullscreen></iframe>
+                <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Полноэкранный режим">⛶</button>
+            </div>
         `;
         if (episodeNumber) {
             trackViewEpisode(episodeNumber);
@@ -870,7 +963,6 @@
         
         const title = currentTitle;
         
-        // Роли
         const roles = window.rolesDatabase?.filter(r => r.titleId === titleId) || [];
         
         let charactersHtml = '';
@@ -889,7 +981,6 @@
             charactersHtml += '</div>';
         }
 
-        // Список серий
         const episodes = title.episodesList || [];
         let episodesHtml = '';
         if (episodes.length > 0) {
@@ -907,17 +998,14 @@
             `;
         }
 
-        // Плеер
         const firstEpisode = episodes.find(ep => ep.url) || { url: '', number: 1 };
         const posterImage = title.imageHorizontal || title.imageVertical || title.image || 'https://via.placeholder.com/250/3a0035/fff?text=No+Image';
 
-        // Средняя оценка
         const avgRating = await getAverageRating(titleId);
         const avgRatingHtml = avgRating > 0 ? 
             `<span class="avg-rating" id="avgRatingContainer">⭐ ${avgRating.toFixed(1)} (${allComments.length} оценок)</span>` : 
             `<span class="avg-rating" id="avgRatingContainer" style="display:none;"></span>`;
 
-        // Админ-панель
         let adminHtml = '';
         if (isAdmin) {
             adminHtml = `
@@ -1018,14 +1106,17 @@
             </div>
             
             <h2 style="color:#d000ff;">▶ Смотреть онлайн</h2>
-            <div class="player-container" id="playerContainer">
-                ${firstEpisode.url ? `
-                    <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
-                ` : `
-                    <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
-                        <p>Скоро появится</p>
-                    </div>
-                `}
+            <div id="playerContainer">
+                <div class="player-wrapper" id="playerWrapper">
+                    ${firstEpisode.url ? `
+                        <iframe id="playerFrame" width="100%" height="100%" src="${firstEpisode.url}" frameborder="0" allowfullscreen></iframe>
+                        <button class="fullscreen-btn" onclick="toggleFullscreen()" title="Полноэкранный режим">⛶</button>
+                    ` : `
+                        <div style="display:flex; align-items:center; justify-content:center; height:100%; color:#666; background:#1a001a;">
+                            <p>Скоро появится</p>
+                        </div>
+                    `}
+                </div>
             </div>
             
             ${episodesHtml}
@@ -1037,8 +1128,6 @@
 
         renderCommentForm();
         setTimeout(updateAverageRating, 500);
-        
-        // Настраиваем автосохранение для серий
         setTimeout(setupEpisodesAutoSave, 100);
     }
 
