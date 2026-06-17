@@ -177,12 +177,99 @@
             box-shadow: 0 8px 25px rgba(208, 0, 255, 0.3);
         }
 
+        /* ===== НОВЫЙ СТИЛЬ ДЛЯ СОЦСЕТЕЙ ===== */
+        .socials-editor {
+            margin-top: 10px;
+        }
+        .social-edit-item {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(58, 0, 53, 0.2);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid #3a0035;
+        }
+        .social-edit-item:hover {
+            border-color: #6d076d;
+        }
+        .social-edit-item .social-type {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+            min-width: 100px;
+        }
+        .social-edit-item .social-type option {
+            background: #1a001a;
+        }
+        .social-edit-item .social-value {
+            flex: 2;
+            min-width: 150px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #3a0035;
+            background: rgba(58, 0, 53, 0.3);
+            color: #fff;
+            font-size: 13px;
+        }
+        .social-edit-item .remove-social-btn {
+            background: #6d0000;
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .social-edit-item .remove-social-btn:hover {
+            background: #8a0000;
+        }
+
+        .add-social-btn {
+            padding: 8px 20px;
+            background: #6d076d;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        .add-social-btn:hover {
+            background: #8a0a8a;
+            transform: translateY(-2px);
+        }
+
+        .socials-empty {
+            color: #666;
+            text-align: center;
+            padding: 15px;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
             .team-card-wrapper .admin-actions {
                 opacity: 1;
             }
             .admin-toolbar {
                 justify-content: center;
+            }
+            .social-edit-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .social-edit-item .social-type,
+            .social-edit-item .social-value {
+                width: 100%;
             }
         }
     </style>
@@ -311,10 +398,16 @@
                 <textarea id="voiceBio" placeholder="Расскажите о даббере..."></textarea>
             </div>
             
+            <!-- ===== НОВЫЙ БЛОК СОЦСЕТЕЙ ===== -->
             <div class="form-group">
-                <label>Соцсети (JSON-формат)</label>
-                <input type="text" id="voiceSocial" placeholder='{"telegram":"username","vk":"id"}' style="font-size:12px;">
-                <small style="color:#666;">Формат: {"telegram":"username","vk":"id","github":"username"}</small>
+                <label style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>🔗 Социальные сети</span>
+                    <button type="button" class="add-social-btn" onclick="addSocial()">➕ Добавить соцсеть</button>
+                </label>
+                <div id="socialsEditor" class="socials-editor">
+                    <div class="socials-empty">Нет добавленных соцсетей</div>
+                </div>
+                <small style="color:#666; display:block; margin-top:5px;">Выберите тип соцсети и введите имя пользователя или ссылку</small>
             </div>
             
             <button type="submit" class="submit-btn" id="voiceSubmitBtn">💾 Сохранить</button>
@@ -374,6 +467,98 @@
         }
     }
 
+    // ===== ФУНКЦИИ УПРАВЛЕНИЯ СОЦСЕТЯМИ =====
+
+    function renderSocialsEditor(socials) {
+        const container = document.getElementById('socialsEditor');
+        
+        // Преобразуем объект в массив для удобства
+        let socialArray = [];
+        if (socials && typeof socials === 'object' && !Array.isArray(socials)) {
+            socialArray = Object.entries(socials).map(([type, value]) => ({ type, value }));
+        } else if (Array.isArray(socials)) {
+            socialArray = socials;
+        }
+        
+        if (!socialArray || socialArray.length === 0) {
+            container.innerHTML = `
+                <div class="socials-empty">📭 Нет добавленных соцсетей</div>
+            `;
+            return;
+        }
+        
+        // Доступные типы соцсетей
+        const socialTypes = [
+            { value: 'telegram', label: '📱 Telegram' },
+            { value: 'vk', label: '📘 VK' },
+            { value: 'github', label: '🐙 GitHub' },
+            { value: 'instagram', label: '📸 Instagram' },
+            { value: 'twitter', label: '🐦 Twitter/X' },
+            { value: 'youtube', label: '▶️ YouTube' },
+            { value: 'discord', label: '💬 Discord' },
+            { value: 'website', label: '🌐 Сайт' },
+            { value: 'other', label: '🔗 Другое' }
+        ];
+        
+        container.innerHTML = socialArray.map((social, index) => `
+            <div class="social-edit-item">
+                <select class="social-type" data-index="${index}" data-field="type">
+                    ${socialTypes.map(st => `
+                        <option value="${st.value}" ${social.type === st.value ? 'selected' : ''}>${st.label}</option>
+                    `).join('')}
+                </select>
+                <input type="text" class="social-value" value="${social.value || ''}" placeholder="Имя пользователя или ссылка" data-index="${index}" data-field="value">
+                <button class="remove-social-btn" onclick="removeSocial(${index})" title="Удалить соцсеть">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.addSocial = function() {
+        const socials = getSocialsFromEditor();
+        socials.push({ type: 'telegram', value: '' });
+        renderSocialsEditor(socials);
+        
+        // Фокусируемся на новом поле
+        const container = document.getElementById('socialsEditor');
+        const lastItem = container.lastElementChild;
+        if (lastItem) {
+            const input = lastItem.querySelector('.social-value');
+            if (input) setTimeout(() => input.focus(), 100);
+        }
+    };
+
+    window.removeSocial = function(index) {
+        const socials = getSocialsFromEditor();
+        socials.splice(index, 1);
+        renderSocialsEditor(socials);
+    };
+
+    function getSocialsFromEditor() {
+        const container = document.getElementById('socialsEditor');
+        const items = container.querySelectorAll('.social-edit-item');
+        const socials = [];
+        items.forEach(el => {
+            const type = el.querySelector('[data-field="type"]').value || 'other';
+            const value = el.querySelector('[data-field="value"]').value || '';
+            if (value.trim()) {
+                socials.push({ type, value: value.trim() });
+            }
+        });
+        return socials;
+    }
+
+    function socialsArrayToObject(socialsArray) {
+        const obj = {};
+        socialsArray.forEach(s => {
+            if (s.value && s.value.trim()) {
+                obj[s.type] = s.value.trim();
+            }
+        });
+        return obj;
+    }
+
+    // ===== ОСТАЛЬНЫЕ ФУНКЦИИ =====
+
     function renderVoices() {
         const dubbers = allVoices.filter(v => v.roleType === 'dubber' || v.roleType === 'both');
         const techStaff = allVoices.filter(v => v.roleType === 'tech' || v.roleType === 'both');
@@ -419,6 +604,7 @@
         document.getElementById('editVoiceId').value = '';
         document.getElementById('voiceForm').reset();
         document.getElementById('voiceId').disabled = false;
+        renderSocialsEditor([]);
         document.getElementById('voiceModal').classList.add('active');
         document.body.style.overflow = 'hidden';
     };
@@ -440,7 +626,10 @@
         document.getElementById('voiceStatus').value = voice.status || '';
         document.getElementById('voiceJoinDate').value = voice.joinDate || '';
         document.getElementById('voiceBio').value = voice.bio || '';
-        document.getElementById('voiceSocial').value = JSON.stringify(voice.social || {});
+        
+        // Рендерим соцсети
+        const socials = voice.social || {};
+        renderSocialsEditor(socials);
         
         document.getElementById('voiceModal').classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -469,18 +658,9 @@
         const joinDate = document.getElementById('voiceJoinDate').value.trim();
         const bio = document.getElementById('voiceBio').value.trim();
         
-        let social = {};
-        try {
-            const raw = document.getElementById('voiceSocial').value.trim();
-            if (raw) {
-                social = JSON.parse(raw);
-            }
-        } catch (e) {
-            alert('❌ Ошибка в формате JSON соцсетей. Проверьте синтаксис.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = '💾 Сохранить';
-            return;
-        }
+        // Получаем соцсети из редактора
+        const socialsArray = getSocialsFromEditor();
+        const socials = socialsArrayToObject(socialsArray);
         
         const data = {
             id: id,
@@ -492,7 +672,7 @@
             status: status,
             joinDate: joinDate || '2026',
             bio: bio,
-            social: social
+            social: socials
         };
         
         let result;
@@ -549,7 +729,6 @@
         if (user) {
             await loadVoicesFromFirestore();
         } else {
-            // Загружаем из data.js для неавторизованных
             if (window.voicesDatabase) {
                 allVoices = window.voicesDatabase;
                 renderVoices();
