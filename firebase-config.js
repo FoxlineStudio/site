@@ -244,6 +244,7 @@ async function toggleSubscribe(currentUserId, targetUserId) {
         const isSubscribed = subscribers.includes(currentUserId);
         
         await runTransaction(db, async (transaction) => {
+            // Обновляем подписчиков у целевого пользователя
             if (isSubscribed) {
                 transaction.update(targetRef, {
                     subscribers: arrayRemove(currentUserId)
@@ -263,6 +264,7 @@ async function toggleSubscribe(currentUserId, targetUserId) {
         
         return { success: true, isSubscribed: !isSubscribed };
     } catch (error) {
+        console.error('Ошибка при подписке:', error);
         return { success: false, error: error.message };
     }
 }
